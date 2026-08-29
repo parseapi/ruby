@@ -111,6 +111,18 @@ module ParseAPI
 			get("/phone/#{seg(number)}", country: country, deep: deep)
 		end
 
+		def carrier(number, country: nil)
+			get("/carrier/#{seg(number)}", country: country)
+		end
+
+		def caller(number, country: nil)
+			get("/caller/#{seg(number)}", country: country)
+		end
+
+		def hlr(number, country: nil)
+			get("/hlr/#{seg(number)}", country: country)
+		end
+
 		def domain(domain, deep: false)
 			get("/domain/#{seg(domain)}", deep: deep)
 		end

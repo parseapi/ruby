@@ -54,6 +54,10 @@ expect('postal_nearby', ->(r) { r['nearby'].any? ? nil : 'empty' }) { parse.post
 expect('postal_distance', ->(r) { r['distance'].between?(800, 1000) ? nil : "distance #{r['distance']}" }) { parse.postal_distance('28202', '10001', country: 'US') }
 expect('email', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.email('hello@gmail.com') }
 expect('phone', ->(r) { r['phone'] == '+14155552671' ? nil : 'wrong phone' }) { parse.phone('+14155552671') }
+# Metered core siblings: junk numbers answer 200 valid false, free, no vendor dip.
+expect('carrier junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.carrier('555-0100') }
+expect('caller junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.caller('555-0100') }
+expect('hlr junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.hlr('555-0100') }
 expect('domain', ->(r) { r['available'] == false ? nil : 'gmail available?' }) { parse.domain('gmail.com') }
 expect('mx', ->(r) { r['mx'].any? ? nil : 'no mx' }) { parse.mx('gmail.com') }
 expect('useragent', ->(r) { r['browser'] == 'Chrome' ? nil : "browser #{r['browser']}" }) { parse.useragent(UA) }
