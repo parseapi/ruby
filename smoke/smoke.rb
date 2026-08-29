@@ -67,7 +67,7 @@ expect('holiday_date', ->(r) { r.dig('holiday', 'name') == 'Christmas Day' ? nil
 expect('holiday null', ->(r) { r['holiday'].nil? ? nil : 'expected null' }) { parse.holiday_date('US', '2026-08-12') }
 expect('elevation', ->(r) { r['elevation'].is_a?(Numeric) ? nil : 'no elevation' }) { parse.elevation(35.2271, -80.8431) }
 expect('point', ->(r) { r['country'] == 'US' ? nil : "country #{r['country']}" }) { parse.point(36.0726, -79.792) }
-expect('weather', ->(r) { r['station'] ? nil : 'no station' }) { parse.weather(40.7128, -74.006) }
+expect('weather', ->(r) { r.dig('station', 'id') ? nil : 'no station' }) { parse.weather(40.7128, -74.006) }
 expect('emoji', ->(r) { r['emoji'] == [0x1F680].pack('U') ? nil : 'wrong emoji' }) { parse.emoji('rocket') }
 expect('emoji_search', ->(r) { r['emojis'].any? ? nil : 'empty' }) { parse.emoji_search('fire', limit: 5) }
 expect('point deep triad', ->(r) { r['deep'].is_a?(Hash) ? nil : 'deep missing' }) { parse.point(36.0726, -79.792, deep: true) }
