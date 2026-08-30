@@ -55,6 +55,14 @@ module ParseAPI
 			get("/continent/#{seg(code)}/countries")
 		end
 
+		def bloc(code)
+			get("/bloc/#{seg(code)}")
+		end
+
+		def bloc_countries(code)
+			get("/bloc/#{seg(code)}/countries")
+		end
+
 		def country(code)
 			get("/country/#{seg(code)}")
 		end

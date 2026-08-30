@@ -40,6 +40,8 @@ expect('ip', ->(r) { r['ip'] == '8.8.8.8' ? nil : 'wrong ip' }) { parse.ip('8.8.
 expect('ip_self', ->(r) { r['ip'] ? nil : 'no ip' }) { parse.ip_self }
 expect('continent', ->(r) { r['name'] == 'North America' ? nil : 'wrong name' }) { parse.continent('NA') }
 expect('continent_countries', ->(r) { r['countries'].any? ? nil : 'empty' }) { parse.continent_countries('NA') }
+expect('bloc', ->(r) { r['name'] == 'European Union' && r['members'] == 27 ? nil : 'wrong bloc' }) { parse.bloc('EU') }
+expect('bloc_countries', ->(r) { r['countries']&.length == 29 ? nil : 'wrong members' }) { parse.bloc_countries('SCHENGEN') }
 expect('country', ->(r) { r['iso3'] == 'USA' ? nil : 'wrong iso3' }) { parse.country('US') }
 expect('country_states', ->(r) { r['states'].length >= 50 ? nil : 'too few' }) { parse.country_states('US') }
 expect('state', ->(r) { r['name'] == 'North Carolina' ? nil : 'wrong' }) { parse.state('NC', country: 'US') }
