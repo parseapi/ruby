@@ -55,6 +55,7 @@ expect('postal', ->(r) { r['city'] == 'Charlotte' ? nil : 'wrong city' }) { pars
 expect('postal_nearby', ->(r) { r['nearby'].any? ? nil : 'empty' }) { parse.postal_nearby('28202', country: 'US', radius: 40) }
 expect('postal_distance', ->(r) { r['distance'].between?(800, 1000) ? nil : "distance #{r['distance']}" }) { parse.postal_distance('28202', '10001', country: 'US') }
 expect('email', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.email('hello@gmail.com') }
+expect('vat', ->(r) { r['valid'] == true && r['country'] == 'DE' ? nil : 'not valid DE' }) { parse.vat('DE136695976') }
 expect('phone', ->(r) { r['phone'] == '+14155552671' ? nil : 'wrong phone' }) { parse.phone('+14155552671') }
 # Metered core siblings: junk numbers answer 200 valid false, free, no vendor dip.
 expect('carrier junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.carrier('555-0100') }

@@ -119,6 +119,10 @@ module ParseAPI
 			get("/email/#{seg(email)}", deep: deep)
 		end
 
+		def vat(number, country: nil, deep: false, from: nil)
+			get("/vat/#{seg(number)}", country: country, deep: deep, from: from)
+		end
+
 		def phone(number, country: nil, deep: false)
 			get("/phone/#{seg(number)}", country: country, deep: deep)
 		end
