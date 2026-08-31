@@ -123,6 +123,10 @@ module ParseAPI
 			get("/vat/#{seg(number)}", country: country, deep: deep, from: from)
 		end
 
+		def iban(iban, country: nil)
+			get("/iban/#{seg(iban)}", country: country)
+		end
+
 		def phone(number, country: nil, deep: false)
 			get("/phone/#{seg(number)}", country: country, deep: deep)
 		end
