@@ -155,6 +155,10 @@ module ParseAPI
 			get('/useragent', { deep: deep }, { 'User-Agent' => ua })
 		end
 
+		def vin(vin, deep: false)
+			get("/vin/#{seg(vin)}", deep: deep)
+		end
+
 		def currency(code)
 			get("/currency/#{seg(code)}")
 		end

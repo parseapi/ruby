@@ -66,6 +66,8 @@ expect('hlr junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }
 expect('domain', ->(r) { r['available'] == false ? nil : 'gmail available?' }) { parse.domain('gmail.com') }
 expect('mx', ->(r) { r['mx'].any? ? nil : 'no mx' }) { parse.mx('gmail.com') }
 expect('useragent', ->(r) { r['browser'] == 'Chrome' ? nil : "browser #{r['browser']}" }) { parse.useragent(UA) }
+expect('vin', ->(r) { r['valid'] == true && r['make'] == 'Honda' && r['year'] == 2003 ? nil : 'wrong decode' }) { parse.vin('1HGCM82633A004352') }
+expect('vin junk', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.vin('1HGCM82613A004352') }
 expect('currency', ->(r) { r['symbol'] == '$' ? nil : 'wrong symbol' }) { parse.currency('USD') }
 expect('currency_rate', ->(r) { r['rate'].positive? && r['rate'] < 10 ? nil : 'bad rate' }) { parse.currency_rate('USD', 'EUR') }
 expect('language', ->(r) { r['language'] == 'en' && r['name'] == 'English' ? nil : 'wrong language' }) { parse.language('en') }
