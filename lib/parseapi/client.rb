@@ -71,16 +71,16 @@ module ParseAPI
 			get("/country/#{seg(code)}/states")
 		end
 
-		def state(code, country:)
+		def state(code, country: nil)
 			get("/state/#{seg(code)}", country: country)
 		end
 
-		def state_districts(code, country:)
+		def state_districts(code, country: nil)
 			get("/state/#{seg(code)}/districts", country: country)
 		end
 
-		def district(code, country: nil)
-			get("/district/#{seg(code)}", country: country)
+		def district(code, country: nil, state: nil)
+			get("/district/#{seg(code)}", country: country, state: state)
 		end
 
 		def city(name, country: nil, state: nil)
@@ -99,15 +99,19 @@ module ParseAPI
 			get('/city', lat: lat, lon: lon)
 		end
 
-		def postal(code, country:)
+		def city_nearby(name, radius: nil, unit: nil, country: nil, state: nil, limit: nil)
+			get("/city/#{seg(name)}/nearby", radius: radius, unit: unit, country: country, state: state, limit: limit)
+		end
+
+		def postal(code, country: nil)
 			get("/postal/#{seg(code)}", country: country)
 		end
 
-		def postal_nearby(code, country:, radius: nil, unit: nil)
+		def postal_nearby(code, country: nil, radius: nil, unit: nil)
 			get("/postal/#{seg(code)}/nearby", country: country, radius: radius, unit: unit)
 		end
 
-		def postal_distance(from, to, country:)
+		def postal_distance(from, to, country: nil)
 			get("/postal/#{seg(from)}/distance/#{seg(to)}", country: country)
 		end
 
