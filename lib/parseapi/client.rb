@@ -155,8 +155,8 @@ module ParseAPI
 			get("/currency/#{seg(code)}")
 		end
 
-		def currency_rate(base, quote)
-			get("/currency/#{seg(base)}/#{seg(quote)}")
+		def currency_rate(base, quote, date: nil, amount: nil)
+			get("/currency/#{seg(base)}/#{seg(quote)}", date: date, amount: amount)
 		end
 
 		def language(code)
