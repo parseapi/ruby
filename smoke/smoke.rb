@@ -74,8 +74,8 @@ expect('currency', ->(r) { r['symbol'] == '$' ? nil : 'wrong symbol' }) { parse.
 expect('currency_rate', ->(r) { r['rate'].positive? && r['rate'] < 10 ? nil : 'bad rate' }) { parse.currency_rate('USD', 'EUR') }
 expect('language', ->(r) { r['language'] == 'en' && r['name'] == 'English' ? nil : 'wrong language' }) { parse.language('en') }
 expect('name', ->(r) { r['name'] == "Billy O'Shall" && r['valid'] == true && r['gender'] == 'male' ? nil : 'wrong name' }) { parse.name("BILLY O'SHALL") }
-expect('sanctions', ->(r) { r['sanctioned'] == true && r['matches'][0]['list'] == 'sdn' ? nil : 'expected sdn match' }) { parse.sanctions('AEROCARIBBEAN AIRLINES') }
-expect('sanctions clean', ->(r) { r['sanctioned'] == false && r['matches'] == [] ? nil : 'expected no match' }) { parse.sanctions('Jane Smith') }
+expect('ofac', ->(r) { r['sanctioned'] == true && r['matches'][0]['list'] == 'sdn' ? nil : 'expected sdn match' }) { parse.ofac('AEROCARIBBEAN AIRLINES') }
+expect('ofac clean', ->(r) { r['sanctioned'] == false && r['matches'] == [] ? nil : 'expected no match' }) { parse.ofac('Jane Smith') }
 expect('timezone', ->(r) { [-240, -300].include?(r['offset_minutes']) ? nil : "offset #{r['offset_minutes']}" }) { parse.timezone('America/New_York') }
 expect('holiday', ->(r) { r['holidays'].length > 5 ? nil : 'too few' }) { parse.holiday('US') }
 expect('holiday_date', ->(r) { r.dig('holiday', 'name') == 'Christmas Day' ? nil : 'not christmas' }) { parse.holiday_date('US', '2026-12-25') }
