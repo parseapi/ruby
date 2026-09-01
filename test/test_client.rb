@@ -71,7 +71,6 @@ class TestUrlMapping < Minitest::Test
 		'currency_rate date amount' => [->(p) { p.currency_rate('USD', 'JPY', date: '2026-08-28', amount: 100) }, 'https://api.parseapi.com/currency/USD/JPY?date=2026-08-28&amount=100'],
 		'language' => [->(p) { p.language('en') }, 'https://api.parseapi.com/language/en'],
 		'name encodes spaces' => [->(p) { p.name('Smith, John') }, 'https://api.parseapi.com/name/Smith%2C%20John'],
-		'ofac encodes spaces' => [->(p) { p.ofac('AEROCARIBBEAN AIRLINES') }, 'https://api.parseapi.com/ofac/AEROCARIBBEAN%20AIRLINES'],
 		'timezone encodes slash' => [->(p) { p.timezone('America/New_York') }, 'https://api.parseapi.com/timezone/America%2FNew_York'],
 		'holiday' => [->(p) { p.holiday('US', year: 1955) }, 'https://api.parseapi.com/holiday/US?year=1955'],
 		'holiday_date' => [->(p) { p.holiday_date('US', '2026-12-25') }, 'https://api.parseapi.com/holiday/US/2026-12-25'],

@@ -187,10 +187,6 @@ module ParseAPI
 			get("/name/#{seg(name)}")
 		end
 
-		def ofac(name)
-			get("/ofac/#{seg(name)}")
-		end
-
 		def timezone(id, at: nil)
 			get("/timezone/#{seg(id)}", at: at)
 		end
