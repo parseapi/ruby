@@ -127,8 +127,8 @@ module ParseAPI
 			get("/iban/#{seg(iban)}", country: country)
 		end
 
-		def npi(npi)
-			get("/npi/#{seg(npi)}")
+		def npi(npi, deep: false)
+			get("/npi/#{seg(npi)}", deep: deep)
 		end
 
 		def phone(number, country: nil, deep: false)
