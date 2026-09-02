@@ -163,12 +163,12 @@ module ParseAPI
 			get("/vin/#{seg(vin)}", deep: deep)
 		end
 
-		def hts(code, deep: false, origin: nil)
-			get("/hts/#{seg(code)}", deep: deep, origin: origin)
+		def tariff(code, deep: false, origin: nil)
+			get("/tariff/#{seg(code)}", deep: deep, origin: origin)
 		end
 
-		def hts_search(q)
-			get('/hts', q: q)
+		def tariff_search(q)
+			get('/tariff', q: q)
 		end
 
 		def currency(code)
