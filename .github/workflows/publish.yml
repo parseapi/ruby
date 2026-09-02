@@ -8,16 +8,19 @@ on:
 
 permissions:
   id-token: write
-  contents: write
+  contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-        with:
-          persist-credentials: false
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
-      - uses: rubygems/release-gem@v1
+      # Tiny gem, no Gemfile. release-gem@v1 runs bundle exec rake release
+      # and dies. Trusted publisher still matches this filename.
+      - uses: rubygems/configure-rubygems-credentials@v2.1.0
+      - run: |
+          gem build parseapi.gemspec
+          gem push parseapi-*.gem
