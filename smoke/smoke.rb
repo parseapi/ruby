@@ -54,6 +54,9 @@ expect('city_nearest', ->(r) { r.key?('distance') ? nil : 'no distance' }) { par
 expect('postal', ->(r) { r['city'] == 'Charlotte' ? nil : 'wrong city' }) { parse.postal('28202', country: 'US') }
 expect('postal_nearby', ->(r) { r['nearby'].any? ? nil : 'empty' }) { parse.postal_nearby('28202', country: 'US', radius: 40) }
 expect('postal_distance', ->(r) { r['distance'].between?(800, 1000) ? nil : "distance #{r['distance']}" }) { parse.postal_distance('28202', '10001', country: 'US') }
+expect('address', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.address('1600 Pennsylvania Ave NW, Washington, DC 20500', country: 'US') }
+expect('address_search', ->(r) { r['addresses'].is_a?(Array) ? nil : 'missing addresses' }) { parse.address_search('123 main', country: 'US', postal: '27401') }
+expect('company', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.company('732829320', country: 'FR') }
 expect('email', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.email('hello@gmail.com') }
 expect('vat', ->(r) { r['valid'] == true && r['country'] == 'DE' ? nil : 'not valid DE' }) { parse.vat('DE136695976') }
 expect('iban', ->(r) { r['valid'] == true && r['country'] == 'DE' && r['bank'] == '37040044' ? nil : 'not valid DE' }) { parse.iban('DE89370400440532013000') }
@@ -66,15 +69,22 @@ expect('carrier junk free', ->(r) { r['valid'] == false ? nil : 'expected invali
 expect('caller junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.caller('555-0100') }
 expect('hlr junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.hlr('555-0100') }
 expect('domain', ->(r) { r['available'] == false ? nil : 'gmail available?' }) { parse.domain('gmail.com') }
+expect('asn', ->(r) { r['asn'] == 13335 ? nil : 'wrong ASN' }) { parse.asn('AS13335') }
+expect('mac', ->(r) { r['valid'] && r['mac'] == '00:1B:63:84:45:E6' && r['local'] == false && r['multicast'] == false ? nil : 'wrong MAC' }) { parse.mac('00:1B:63:84:45:E6') }
 expect('mx', ->(r) { r['mx'].any? ? nil : 'no mx' }) { parse.mx('gmail.com') }
 expect('useragent', ->(r) { r['browser'] == 'Chrome' ? nil : "browser #{r['browser']}" }) { parse.useragent(UA) }
 expect('vin', ->(r) { r['valid'] == true && r['make'] == 'Honda' && r['year'] == 2003 ? nil : 'wrong decode' }) { parse.vin('1HGCM82633A004352') }
 expect('vin junk', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.vin('1HGCM82613A004352') }
+expect('tariff', ->(r) { r['hts'].is_a?(String) ? nil : 'missing hts' }) { parse.tariff('8471.30.01.00') }
+expect('tariff_search', ->(r) { r['lines'].is_a?(Array) ? nil : 'missing lines' }) { parse.tariff_search('sunglasses') }
 expect('currency', ->(r) { r['symbol'] == '$' ? nil : 'wrong symbol' }) { parse.currency('USD') }
 expect('currency_rate', ->(r) { r['rate'].positive? && r['rate'] < 10 ? nil : 'bad rate' }) { parse.currency_rate('USD', 'EUR') }
 expect('language', ->(r) { r['language'] == 'en' && r['name'] == 'English' ? nil : 'wrong language' }) { parse.language('en') }
 expect('name', ->(r) { r['name'] == "Billy O'Shall" && r['valid'] == true && r['gender'] == 'male' ? nil : 'wrong name' }) { parse.name("BILLY O'SHALL") }
 expect('timezone', ->(r) { [-240, -300].include?(r['offset_minutes']) ? nil : "offset #{r['offset_minutes']}" }) { parse.timezone('America/New_York') }
+expect('timezone_at', ->(r) { r['timezone'] == 'America/New_York' ? nil : 'wrong timezone' }) { parse.timezone_at(35.2271, -80.8431) }
+expect('date', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.date('03/04/2026', format: 'mdy') }
+expect('date_today', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.date_today }
 expect('holiday', ->(r) { r['holidays'].length > 5 ? nil : 'too few' }) { parse.holiday('US') }
 expect('holiday_date', ->(r) { r.dig('holiday', 'name') == 'Christmas Day' ? nil : 'not christmas' }) { parse.holiday_date('US', '2026-12-25') }
 expect('holiday null', ->(r) { r['holiday'].nil? ? nil : 'expected null' }) { parse.holiday_date('US', '2026-08-12') }
@@ -87,6 +97,7 @@ expect('point deep triad', ->(r) { r['deep'].is_a?(Hash) ? nil : 'deep missing' 
 
 expect_error('honest 404', 'not_found') { parse.city('notarealcityxyz') }
 expect_error('bogus key 401', 'invalid_api_key') { ParseAPI.new('bogus_key_123', retries: 0).country('US') }
+parse.close
 
 puts "\n#{$total - $failures}/#{$total} passed"
 exit($failures.zero? ? 0 : 1)

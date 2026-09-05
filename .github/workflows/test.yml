@@ -1,0 +1,19 @@
+name: SDK checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: ['3.0', '4.0']
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - run: gem install minitest -v '~> 5.0' --no-document
+      - run: ruby -Itest test/test_client.rb
+      - run: ruby -c smoke/smoke.rb
+      - run: gem build parseapi.gemspec

@@ -20,6 +20,8 @@ jobs:
           ruby-version: '3.3'
       # Tiny gem, no Gemfile. release-gem@v1 runs bundle exec rake release
       # and dies. Trusted publisher still matches this filename.
+      - run: gem install minitest -v '~> 5.0' --no-document
+      - run: ruby -Itest test/test_client.rb
       - uses: rubygems/configure-rubygems-credentials@v2.1.0
       - run: |
           gem build parseapi.gemspec

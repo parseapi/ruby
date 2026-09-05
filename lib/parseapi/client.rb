@@ -1,6 +1,7 @@
 require 'json'
 require 'net/http'
 require 'uri'
+require 'time'
 
 module ParseAPI
 	# Every non-2xx response from the API. Branch on +code+, never on the message.
@@ -22,19 +23,35 @@ module ParseAPI
 		DEFAULT_RETRIES = 2
 		RETRY_STATUS = [429, 500, 502, 503, 504].freeze
 		RETRY_AFTER_CAP = 5.0
+		METERED_CORE = %w[carrier caller hlr litigator reassigned].freeze
 		NETWORK_ERRORS = [
 			Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::EHOSTUNREACH, Errno::ETIMEDOUT,
 			Net::OpenTimeout, Net::ReadTimeout, IOError, EOFError, SocketError
 		].freeze
 
-		def initialize(api_key = nil, base_url: nil, timeout: nil, retries: nil)
+		def initialize(api_key = nil, base_url: nil, timeout: nil, retries: nil, transport: nil)
 			@api_key = api_key || ENV['PARSEAPI_KEY']
 			raise ArgumentError, 'parseapi: missing API key. Pass one or set PARSEAPI_KEY.' if @api_key.nil? || @api_key.empty?
 
 			@base_url = URI((base_url || ENV['PARSEAPI_BASE_URL'] || DEFAULT_BASE_URL).sub(%r{/+\z}, ''))
 			@timeout = timeout || DEFAULT_TIMEOUT
-			@retries = retries || DEFAULT_RETRIES
+			@retries = retries
+			raise ArgumentError, 'parseapi: timeout must be a finite positive number.' unless @timeout.is_a?(Numeric) && @timeout.finite? && @timeout > 0
+			raise ArgumentError, 'parseapi: retries must be a non-negative integer or nil.' unless @retries.nil? || (@retries.is_a?(Integer) && @retries >= 0)
+			raise ArgumentError, 'parseapi: transport must be callable.' unless transport.nil? || transport.respond_to?(:call)
+			@transport = transport
 			@http = nil
+		end
+
+		# Release the connection. A later lookup opens a new one.
+		def close
+			@http.finish if @http&.started?
+			@http = nil
+			nil
+		end
+
+		def inspect
+			"#<#{self.class} api_key=[REDACTED] timeout=#{@timeout} retries=#{@retries.nil? ? 'auto' : @retries}>"
 		end
 
 		# --- Lookup methods (one per endpoint, named after the route) ---
@@ -91,8 +108,8 @@ module ParseAPI
 			get("/city/id/#{seg(id)}")
 		end
 
-		def city_search(q, country: nil, state: nil, limit: nil)
-			get('/city', q: q, country: country, state: state, limit: limit)
+		def city_search(query, country: nil, state: nil, limit: nil)
+			get('/city', q: query, country: country, state: state, limit: limit)
 		end
 
 		def city_nearest(lat, lon)
@@ -113,6 +130,18 @@ module ParseAPI
 
 		def postal_distance(from, to, country: nil)
 			get("/postal/#{seg(from)}/distance/#{seg(to)}", country: country)
+		end
+
+		def address(address, country: nil, deep: false)
+			get("/address/#{seg(address)}", country: country, deep: deep)
+		end
+
+		def address_search(query, country: nil, postal: nil, city: nil, state: nil, ip: nil)
+			get('/address', q: query, country: country, postal: postal, city: city, state: state, ip: ip)
+		end
+
+		def company(number, country: nil, deep: false)
+			get("/company/#{seg(number)}", country: country, deep: deep)
 		end
 
 		def email(email, deep: false)
@@ -151,6 +180,14 @@ module ParseAPI
 			get("/domain/#{seg(domain)}", deep: deep)
 		end
 
+		def asn(asn)
+			get("/asn/#{seg(asn)}")
+		end
+
+		def mac(mac)
+			get("/mac/#{seg(mac)}")
+		end
+
 		def mx(domain)
 			get("/mx/#{seg(domain)}")
 		end
@@ -167,8 +204,8 @@ module ParseAPI
 			get("/tariff/#{seg(code)}", deep: deep, origin: origin)
 		end
 
-		def tariff_search(q)
-			get('/tariff', q: q)
+		def tariff_search(query)
+			get('/tariff', q: query)
 		end
 
 		def currency(code)
@@ -187,8 +224,20 @@ module ParseAPI
 			get("/name/#{seg(name)}")
 		end
 
-		def timezone(id, at: nil)
-			get("/timezone/#{seg(id)}", at: at)
+		def timezone(id, at: nil, to: nil)
+			get("/timezone/#{seg(id)}", at: at, to: to)
+		end
+
+		def timezone_at(lat, lon, at: nil)
+			get('/timezone', lat: lat, lon: lon, at: at)
+		end
+
+		def date(date, format: nil, to: nil)
+			get("/date/#{seg(date)}", format: format, to: to)
+		end
+
+		def date_today(to: nil)
+			get('/date', to: to)
 		end
 
 		def holiday(country, year: nil)
@@ -207,16 +256,16 @@ module ParseAPI
 			get('/point', lat: lat, lon: lon, deep: deep)
 		end
 
-		def weather(lat, lon, deep: false)
-			get('/weather', lat: lat, lon: lon, deep: deep)
+		def weather(lat, lon, deep: false, date: nil)
+			get('/weather', lat: lat, lon: lon, deep: deep, date: date)
 		end
 
 		def emoji(emoji)
 			get("/emoji/#{seg(emoji)}")
 		end
 
-		def emoji_search(q, limit: nil)
-			get('/emoji', q: q, limit: limit)
+		def emoji_search(query, limit: nil)
+			get('/emoji', q: query, limit: limit)
 		end
 
 		private
@@ -226,6 +275,7 @@ module ParseAPI
 		end
 
 		def get(path, params = {}, headers = {})
+			retries = retries_for(path, params)
 			query = params.reject { |_name, value| value.nil? || value == false }
 			uri = @base_url.dup
 			uri.path = path
@@ -236,7 +286,7 @@ module ParseAPI
 				begin
 					status, response_headers, body = execute(uri, request_headers(headers))
 				rescue *NETWORK_ERRORS
-					raise if attempt >= @retries
+					raise if attempt >= retries
 
 					sleep(retry_delay(attempt, nil))
 					attempt += 1
@@ -245,7 +295,7 @@ module ParseAPI
 
 				return JSON.parse(body) if (200..299).cover?(status)
 
-				if RETRY_STATUS.include?(status) && attempt < @retries
+				if RETRY_STATUS.include?(status) && attempt < retries
 					sleep(retry_delay(attempt, response_headers['retry-after']))
 					attempt += 1
 					next
@@ -261,6 +311,8 @@ module ParseAPI
 
 		# Returns [status, headers_hash, body_string]. Overridden in tests.
 		def execute(uri, headers)
+			return @transport.call(uri.to_s, headers) if @transport
+
 			http = connection
 			request = Net::HTTP::Get.new(uri.request_uri)
 			headers.each { |name, value| request[name] = value }
@@ -276,6 +328,9 @@ module ParseAPI
 				@http.use_ssl = @base_url.scheme == 'https'
 				@http.open_timeout = @timeout
 				@http.read_timeout = @timeout
+				@http.write_timeout = @timeout
+				# The client owns retries, including retries: 0.
+				@http.max_retries = 0
 				@http.keep_alive_timeout = 30
 			end
 			@http.start unless @http.started?
@@ -285,9 +340,22 @@ module ParseAPI
 		def retry_delay(attempt, retry_after)
 			if retry_after
 				seconds = Float(retry_after, exception: false)
-				return [seconds, RETRY_AFTER_CAP].min if seconds && seconds >= 0
+				return [seconds, RETRY_AFTER_CAP].min if seconds && seconds.finite? && seconds >= 0
+				begin
+					return [[Time.httpdate(retry_after) - Time.now, 0].max, RETRY_AFTER_CAP].min
+				rescue ArgumentError
+					# Fall back to jitter when the header is not a delay or HTTP date.
+				end
 			end
 			rand * 0.25 * (2**attempt)
+		end
+
+		def retries_for(path, params)
+			return @retries unless @retries.nil?
+
+			product = path.split('/', 3)[1]
+			metered = METERED_CORE.include?(product) || (%w[email vat address].include?(product) && params[:deep] == true)
+			metered ? 0 : DEFAULT_RETRIES
 		end
 
 		def build_error(status, body)

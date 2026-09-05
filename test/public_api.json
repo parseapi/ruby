@@ -1,0 +1,644 @@
+{
+  "ParseAPI.new": [
+    [
+      "opt",
+      "api_key"
+    ],
+    [
+      "keyrest",
+      "options"
+    ]
+  ],
+  "ParseAPI::Client": {
+    "address": [
+      [
+        "req",
+        "address"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "address_search": [
+      [
+        "req",
+        "query"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "postal"
+      ],
+      [
+        "key",
+        "city"
+      ],
+      [
+        "key",
+        "state"
+      ],
+      [
+        "key",
+        "ip"
+      ]
+    ],
+    "asn": [
+      [
+        "req",
+        "asn"
+      ]
+    ],
+    "bloc": [
+      [
+        "req",
+        "code"
+      ]
+    ],
+    "bloc_countries": [
+      [
+        "req",
+        "code"
+      ]
+    ],
+    "caller": [
+      [
+        "req",
+        "number"
+      ],
+      [
+        "key",
+        "country"
+      ]
+    ],
+    "carrier": [
+      [
+        "req",
+        "number"
+      ],
+      [
+        "key",
+        "country"
+      ]
+    ],
+    "city": [
+      [
+        "req",
+        "name"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "state"
+      ]
+    ],
+    "city_id": [
+      [
+        "req",
+        "id"
+      ]
+    ],
+    "city_nearby": [
+      [
+        "req",
+        "name"
+      ],
+      [
+        "key",
+        "radius"
+      ],
+      [
+        "key",
+        "unit"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "state"
+      ],
+      [
+        "key",
+        "limit"
+      ]
+    ],
+    "city_nearest": [
+      [
+        "req",
+        "lat"
+      ],
+      [
+        "req",
+        "lon"
+      ]
+    ],
+    "city_search": [
+      [
+        "req",
+        "query"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "state"
+      ],
+      [
+        "key",
+        "limit"
+      ]
+    ],
+    "close": [],
+    "company": [
+      [
+        "req",
+        "number"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "continent": [
+      [
+        "req",
+        "code"
+      ]
+    ],
+    "continent_countries": [
+      [
+        "req",
+        "code"
+      ]
+    ],
+    "country": [
+      [
+        "req",
+        "code"
+      ]
+    ],
+    "country_states": [
+      [
+        "req",
+        "code"
+      ]
+    ],
+    "currency": [
+      [
+        "req",
+        "code"
+      ]
+    ],
+    "currency_rate": [
+      [
+        "req",
+        "base"
+      ],
+      [
+        "req",
+        "quote"
+      ],
+      [
+        "key",
+        "date"
+      ],
+      [
+        "key",
+        "amount"
+      ]
+    ],
+    "date": [
+      [
+        "req",
+        "date"
+      ],
+      [
+        "key",
+        "format"
+      ],
+      [
+        "key",
+        "to"
+      ]
+    ],
+    "date_today": [
+      [
+        "key",
+        "to"
+      ]
+    ],
+    "district": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "state"
+      ]
+    ],
+    "domain": [
+      [
+        "req",
+        "domain"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "elevation": [
+      [
+        "req",
+        "lat"
+      ],
+      [
+        "req",
+        "lon"
+      ]
+    ],
+    "email": [
+      [
+        "req",
+        "email"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "emoji": [
+      [
+        "req",
+        "emoji"
+      ]
+    ],
+    "emoji_search": [
+      [
+        "req",
+        "query"
+      ],
+      [
+        "key",
+        "limit"
+      ]
+    ],
+    "hlr": [
+      [
+        "req",
+        "number"
+      ],
+      [
+        "key",
+        "country"
+      ]
+    ],
+    "holiday": [
+      [
+        "req",
+        "country"
+      ],
+      [
+        "key",
+        "year"
+      ]
+    ],
+    "holiday_date": [
+      [
+        "req",
+        "country"
+      ],
+      [
+        "req",
+        "date"
+      ]
+    ],
+    "iban": [
+      [
+        "req",
+        "iban"
+      ],
+      [
+        "key",
+        "country"
+      ]
+    ],
+    "initialize": [
+      [
+        "opt",
+        "api_key"
+      ],
+      [
+        "key",
+        "base_url"
+      ],
+      [
+        "key",
+        "timeout"
+      ],
+      [
+        "key",
+        "retries"
+      ],
+      [
+        "key",
+        "transport"
+      ]
+    ],
+    "inspect": [],
+    "ip": [
+      [
+        "req",
+        "ip"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "ip_self": [
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "language": [
+      [
+        "req",
+        "code"
+      ]
+    ],
+    "mac": [
+      [
+        "req",
+        "mac"
+      ]
+    ],
+    "mx": [
+      [
+        "req",
+        "domain"
+      ]
+    ],
+    "name": [
+      [
+        "req",
+        "name"
+      ]
+    ],
+    "npi": [
+      [
+        "req",
+        "npi"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "phone": [
+      [
+        "req",
+        "number"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "point": [
+      [
+        "req",
+        "lat"
+      ],
+      [
+        "req",
+        "lon"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "postal": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "country"
+      ]
+    ],
+    "postal_distance": [
+      [
+        "req",
+        "from"
+      ],
+      [
+        "req",
+        "to"
+      ],
+      [
+        "key",
+        "country"
+      ]
+    ],
+    "postal_nearby": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "radius"
+      ],
+      [
+        "key",
+        "unit"
+      ]
+    ],
+    "state": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "country"
+      ]
+    ],
+    "state_districts": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "country"
+      ]
+    ],
+    "tariff": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "origin"
+      ]
+    ],
+    "tariff_search": [
+      [
+        "req",
+        "query"
+      ]
+    ],
+    "timezone": [
+      [
+        "req",
+        "id"
+      ],
+      [
+        "key",
+        "at"
+      ],
+      [
+        "key",
+        "to"
+      ]
+    ],
+    "timezone_at": [
+      [
+        "req",
+        "lat"
+      ],
+      [
+        "req",
+        "lon"
+      ],
+      [
+        "key",
+        "at"
+      ]
+    ],
+    "useragent": [
+      [
+        "req",
+        "ua"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "vat": [
+      [
+        "req",
+        "number"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "from"
+      ]
+    ],
+    "vin": [
+      [
+        "req",
+        "vin"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "weather": [
+      [
+        "req",
+        "lat"
+      ],
+      [
+        "req",
+        "lon"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "date"
+      ]
+    ]
+  },
+  "ParseAPI::Error": {
+    "code": [],
+    "docs": [],
+    "initialize": [
+      [
+        "keyreq",
+        "status"
+      ],
+      [
+        "keyreq",
+        "code"
+      ],
+      [
+        "keyreq",
+        "message"
+      ],
+      [
+        "key",
+        "docs"
+      ],
+      [
+        "key",
+        "request_id"
+      ]
+    ],
+    "request_id": [],
+    "status": []
+  }
+}
