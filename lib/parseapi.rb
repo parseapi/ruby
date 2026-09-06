@@ -1,7 +1,7 @@
 require_relative 'parseapi/version'
 require_relative 'parseapi/client'
 
-# Official parseAPI client for Ruby.
+# Official ParseAPI client for Ruby.
 #
 #   parse = ParseAPI.new('your-api-key')
 #   parse.country('US')

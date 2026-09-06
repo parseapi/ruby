@@ -3,10 +3,10 @@ require_relative 'lib/parseapi/version'
 Gem::Specification.new do |spec|
 	spec.name = 'parseapi'
 	spec.version = ParseAPI::VERSION
-	spec.authors = ['parseAPI']
+	spec.authors = ['ParseAPI']
 	spec.email = ['hello@parseapi.com']
 
-	spec.summary = 'Official parseAPI client for Ruby. One key, minimal JSON, fast.'
+	spec.summary = 'Official ParseAPI client for Ruby. One key, minimal JSON, fast.'
 	spec.homepage = 'https://parseapi.com'
 	spec.license = 'MIT'
 	spec.required_ruby_version = '>= 3.0'
