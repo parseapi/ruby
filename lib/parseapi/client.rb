@@ -235,8 +235,8 @@ module ParseAPI
 			get("/language/#{seg(code)}")
 		end
 
-		def name(name)
-			get("/name/#{seg(name)}")
+		def name(name, country: nil)
+			get("/name/#{seg(name)}", country: country)
 		end
 
 		def timezone(id, at: nil, to: nil)

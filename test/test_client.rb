@@ -36,7 +36,14 @@ class TestUrlMapping < Minitest::Test
 		StubClient.new('test_key_123', retries: 0, **kwargs)
 	end
 
+	def test_known_name_does_not_require_gender
+		body = { 'name' => '王', 'valid' => true, 'known' => true, 'countries' => ['CN', 'TW'], 'gender' => nil, 'future' => true }
+		client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+		assert_equal body, client.name('王', country: 'CN')
+	end
+
 	TABLE = {
+		'name country' => [->(p) { p.name('Andrea / Smith', country: 'IT') }, 'https://api.parseapi.com/name/Andrea%20%2F%20Smith?country=IT'],
 		'ip' => [->(p) { p.ip('8.8.8.8') }, 'https://api.parseapi.com/ip/8.8.8.8'],
 		'ip_self' => [->(p) { p.ip_self }, 'https://api.parseapi.com/ip'],
 		'ip deep' => [->(p) { p.ip('8.8.8.8', deep: true) }, 'https://api.parseapi.com/ip/8.8.8.8?deep=true'],
