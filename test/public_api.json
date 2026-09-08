@@ -259,6 +259,16 @@
         "state"
       ]
     ],
+    "dns": [
+      [
+        "req",
+        "domain"
+      ],
+      [
+        "key",
+        "type"
+      ]
+    ],
     "domain": [
       [
         "req",

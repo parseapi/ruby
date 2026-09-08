@@ -203,6 +203,12 @@ module ParseAPI
 			get("/mac/#{seg(mac)}")
 		end
 
+		# Published DNS records with TTLs. Omit type to check all supported types.
+		# Type selects the question, including its CNAME chain. Pooled on every plan.
+		def dns(domain, type: nil)
+			get("/dns/#{seg(domain)}", type: type)
+		end
+
 		def mx(domain)
 			get("/mx/#{seg(domain)}")
 		end

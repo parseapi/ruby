@@ -36,6 +36,14 @@ class TestUrlMapping < Minitest::Test
 		StubClient.new('test_key_123', retries: 0, **kwargs)
 	end
 
+	def test_dns_preserves_presentation_and_empty_records
+		[[], [{ 'name' => 'example.com.', 'type' => 'TXT', 'ttl' => 0, 'value' => '"one" "two"', 'future' => nil }]].each do |records|
+			body = { 'domain' => 'example.com', 'records' => records, 'future' => true }
+			client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+			assert_equal body, client.dns('example.com', type: 'TXT')
+		end
+	end
+
 	def test_known_name_does_not_require_gender
 		body = { 'name' => '王', 'valid' => true, 'known' => true, 'countries' => ['CN', 'TW'], 'gender' => nil, 'future' => true }
 		client = stub_client(responses: [[200, {}, JSON.generate(body)]])
@@ -43,6 +51,8 @@ class TestUrlMapping < Minitest::Test
 	end
 
 	TABLE = {
+		'dns' => [->(p) { p.dns('example.com') }, 'https://api.parseapi.com/dns/example.com'],
+		'dns type' => [->(p) { p.dns('_dmarc.bücher.example.', type: 'txt') }, 'https://api.parseapi.com/dns/_dmarc.b%C3%BCcher.example.?type=txt'],
 		'name country' => [->(p) { p.name('Andrea / Smith', country: 'IT') }, 'https://api.parseapi.com/name/Andrea%20%2F%20Smith?country=IT'],
 		'measure' => [->(p) { p.measure('5 ft 11 in', to: 'cm', locale: 'en-US', system: 'us') }, 'https://api.parseapi.com/measure/5%20ft%2011%20in?to=cm&locale=en-US&system=us'],
 		'measure compound' => [->(p) { p.measure('1 kg/m^3', to: 'g/L') }, 'https://api.parseapi.com/measure/1%20kg%2Fm%5E3?to=g%2FL'],
