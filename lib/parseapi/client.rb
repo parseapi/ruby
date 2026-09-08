@@ -54,12 +54,13 @@ module ParseAPI
 			"#<#{self.class} api_key=[REDACTED] timeout=#{@timeout} retries=#{@retries.nil? ? 'auto' : @retries}>"
 		end
 
-		# --- Lookup methods (one per endpoint, named after the route) ---
 
+		# Look up an IP. Deep enrichment is included with a paid plan, without a separate check meter.
 		def ip(ip, deep: false)
 			get("/ip/#{seg(ip)}", deep: deep)
 		end
 
+		# Look up the public IP making this request. On a server, this is the server's IP.
 		def ip_self(deep: false)
 			get('/ip', deep: deep)
 		end
@@ -120,6 +121,8 @@ module ParseAPI
 			get("/city/#{seg(name)}/nearby", radius: radius, unit: unit, country: country, state: state, limit: limit)
 		end
 
+		# Look up a postal area. Pass country when known. Check nullable coordinates before another
+		# location lookup.
 		def postal(code, country: nil)
 			get("/postal/#{seg(code)}", country: country)
 		end
@@ -144,10 +147,16 @@ module ParseAPI
 			get("/company/#{seg(number)}", country: country, deep: deep)
 		end
 
+		# Parse an email and check its format and domain. Deep explicitly requests a metered
+		# deliverability check. Deep checks use one attempt by default. An explicit retry count can
+		# repeat paid usage.
 		def email(email, deep: false)
 			get("/email/#{seg(email)}", deep: deep)
 		end
 
+		# Check VAT format and checksum. Deep requests a metered registry check where supported. Deep
+		# checks use one attempt by default. Supply your own VAT number for a consultation reference
+		# when supported.
 		def vat(number, country: nil, deep: false, from: nil)
 			get("/vat/#{seg(number)}", country: country, deep: deep, from: from)
 		end
@@ -160,18 +169,24 @@ module ParseAPI
 			get("/npi/#{seg(npi)}", deep: deep)
 		end
 
+		# Parse a phone number and its formats. Pass country for national numbers when needed. Deep
+		# returns an empty object. Carrier, caller, and HLR are separate metered lookups.
 		def phone(number, country: nil, deep: false)
 			get("/phone/#{seg(number)}", country: country, deep: deep)
 		end
 
+		# Request a metered carrier lookup. No automatic retries by default.
 		def carrier(number, country: nil)
 			get("/carrier/#{seg(number)}", country: country)
 		end
 
+		# Request a metered caller-name lookup for a NANP number. No automatic retries by default.
 		def caller(number, country: nil)
 			get("/caller/#{seg(number)}", country: country)
 		end
 
+		# Request a metered live-status lookup. nil status means unconfirmed. No automatic retries by
+		# default.
 		def hlr(number, country: nil)
 			get("/hlr/#{seg(number)}", country: country)
 		end
@@ -256,6 +271,8 @@ module ParseAPI
 			get('/point', lat: lat, lon: lon, deep: deep)
 		end
 
+		# Get weather for a point. Both unit systems are returned. Pass known coordinates from a
+		# postal, city, or location result.
 		def weather(lat, lon, deep: false, date: nil)
 			get('/weather', lat: lat, lon: lon, deep: deep, date: date)
 		end
