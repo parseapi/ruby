@@ -71,6 +71,8 @@ expect('hlr junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }
 expect('domain', ->(r) { r['available'] == false ? nil : 'gmail available?' }) { parse.domain('gmail.com') }
 expect('asn', ->(r) { r['asn'] == 13335 ? nil : 'wrong ASN' }) { parse.asn('AS13335') }
 expect('mac', ->(r) { r['valid'] && r['mac'] == '00:1B:63:84:45:E6' && r['local'] == false && r['multicast'] == false ? nil : 'wrong MAC' }) { parse.mac('00:1B:63:84:45:E6') }
+expect('measure', ->(r) { r['valid'] && r['amount'] == '180.34' && r['unit'] == 'cm' ? nil : 'wrong conversion' }) { parse.measure('5 ft 11 in', to: 'cm') }
+expect('measure_units', ->(r) { r['units'].any? { |unit| unit['unit'] == 'm' } ? nil : 'missing metre' }) { parse.measure_units(unit: 'm') }
 expect('mx', ->(r) { r['mx'].any? ? nil : 'no mx' }) { parse.mx('gmail.com') }
 expect('useragent', ->(r) { r['browser'] == 'Chrome' ? nil : "browser #{r['browser']}" }) { parse.useragent(UA) }
 expect('vin', ->(r) { r['valid'] == true && r['make'] == 'Honda' && r['year'] == 2003 ? nil : 'wrong decode' }) { parse.vin('1HGCM82633A004352') }

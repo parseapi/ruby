@@ -396,6 +396,38 @@
         "mac"
       ]
     ],
+    "measure": [
+      [
+        "req",
+        "measure"
+      ],
+      [
+        "key",
+        "to"
+      ],
+      [
+        "key",
+        "locale"
+      ],
+      [
+        "key",
+        "system"
+      ]
+    ],
+    "measure_units": [
+      [
+        "key",
+        "query"
+      ],
+      [
+        "key",
+        "type"
+      ],
+      [
+        "key",
+        "unit"
+      ]
+    ],
     "mx": [
       [
         "req",

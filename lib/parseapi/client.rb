@@ -285,6 +285,17 @@ module ParseAPI
 			get('/emoji', q: query, limit: limit)
 		end
 
+		# Parse or convert a measurement. Amount is a decimal string. Without to, use the
+		# type's canonical unit. Locale and system (us or imperial) resolve explicit ambiguity.
+		def measure(measure, to: nil, locale: nil, system: nil)
+			get("/measure/#{seg(measure)}", to: to, locale: locale, system: system)
+		end
+
+		# Discover reviewed units. unit filters compatible conversion targets.
+		def measure_units(query: nil, type: nil, unit: nil)
+			get('/measure/units', q: query, type: type, unit: unit)
+		end
+
 		private
 
 		def seg(value)

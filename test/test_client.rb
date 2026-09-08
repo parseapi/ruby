@@ -44,6 +44,10 @@ class TestUrlMapping < Minitest::Test
 
 	TABLE = {
 		'name country' => [->(p) { p.name('Andrea / Smith', country: 'IT') }, 'https://api.parseapi.com/name/Andrea%20%2F%20Smith?country=IT'],
+		'measure' => [->(p) { p.measure('5 ft 11 in', to: 'cm', locale: 'en-US', system: 'us') }, 'https://api.parseapi.com/measure/5%20ft%2011%20in?to=cm&locale=en-US&system=us'],
+		'measure compound' => [->(p) { p.measure('1 kg/m^3', to: 'g/L') }, 'https://api.parseapi.com/measure/1%20kg%2Fm%5E3?to=g%2FL'],
+		'measure_units' => [->(p) { p.measure_units(query: 'US gallon', type: 'volume', unit: 'L') }, 'https://api.parseapi.com/measure/units?q=US+gallon&type=volume&unit=L'],
+		'measure_units all' => [->(p) { p.measure_units }, 'https://api.parseapi.com/measure/units'],
 		'ip' => [->(p) { p.ip('8.8.8.8') }, 'https://api.parseapi.com/ip/8.8.8.8'],
 		'ip_self' => [->(p) { p.ip_self }, 'https://api.parseapi.com/ip'],
 		'ip deep' => [->(p) { p.ip('8.8.8.8', deep: true) }, 'https://api.parseapi.com/ip/8.8.8.8?deep=true'],
@@ -309,5 +313,24 @@ class TestUrlMapping < Minitest::Test
 		})
 		assert_equal 'us', parse.country('US')['country']
 		assert_equal 'https://api.parseapi.com/country/US', calls.first[0]
+	end
+end
+
+class TestMeasure < Minitest::Test
+	def test_decimal_and_ambiguity_are_plain_data
+		[
+			{ 'measure' => '0 m', 'valid' => true, 'type' => 'future-type', 'amount' => '0', 'unit' => 'm', 'reason' => nil, 'choices' => [], 'future' => nil },
+			{ 'measure' => '1 gallon', 'valid' => false, 'type' => nil, 'amount' => nil, 'unit' => nil, 'reason' => 'ambiguous_unit', 'choices' => [{ 'unit' => 'us_gal', 'name' => 'US liquid gallon' }] }
+		].each do |body|
+			client = StubClient.new('test_key', retries: 0, responses: [[200, {}, JSON.generate(body)]])
+			assert_equal body, client.measure(body['measure'])
+		end
+	end
+
+	def test_bad_target_preserves_api_error
+		client = StubClient.new('test_key', responses: [[400, {}, '{"code":"bad_request","message":"Incompatible units","request_id":"req_measure"}']])
+		error = assert_raises(ParseAPI::Error) { client.measure('1 m', to: 'kg') }
+		assert_equal 'bad_request', error.code
+		assert_equal 1, client.calls.length
 	end
 end
