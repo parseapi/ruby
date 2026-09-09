@@ -390,3 +390,24 @@ class TestADP < Minitest::Test
   end
  end
 end
+
+
+class TestNameLocal < Minitest::Test
+ def test_preserves_native_name_and_null_in_direct_and_nested_responses
+  ['München', nil].each do |name_local|
+   record = { 'name' => 'Munich', 'name_local' => name_local }
+   cases = [
+    [->(p) { p.country('DE') }, record],
+    [->(p) { p.state('BY') }, record],
+    [->(p) { p.city('Munich') }, record],
+    [->(p) { p.language('de') }, record],
+    [->(p) { p.holiday('DE') }, { 'holidays' => [record] }],
+    [->(p) { p.point(48, 11, deep: true) }, { 'deep' => { 'city' => record } }]
+   ]
+   cases.each do |invoke, body|
+    client = StubClient.new('test_key', retries: 0, responses: [[200, {}, JSON.generate(body)]])
+    assert_equal body, invoke.call(client)
+   end
+  end
+ end
+end
