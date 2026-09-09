@@ -96,6 +96,10 @@
       [
         "key",
         "country"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "city": [
@@ -110,12 +114,20 @@
       [
         "key",
         "state"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "city_id": [
       [
         "req",
         "id"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "city_nearby": [
@@ -142,6 +154,10 @@
       [
         "key",
         "limit"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "city_nearest": [
@@ -152,6 +168,10 @@
       [
         "req",
         "lon"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "city_search": [
@@ -170,6 +190,10 @@
       [
         "key",
         "limit"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "close": [],
@@ -203,6 +227,10 @@
       [
         "req",
         "code"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "country_states": [
@@ -215,6 +243,10 @@
       [
         "req",
         "code"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "currency_rate": [
@@ -247,12 +279,20 @@
       [
         "key",
         "to"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "date_today": [
       [
         "key",
         "to"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "district": [
@@ -267,6 +307,10 @@
       [
         "key",
         "state"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "dns": [
@@ -313,6 +357,10 @@
       [
         "req",
         "emoji"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "emoji_search": [
@@ -323,6 +371,10 @@
       [
         "key",
         "limit"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "hlr": [
@@ -333,6 +385,10 @@
       [
         "key",
         "country"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "holiday": [
@@ -363,6 +419,10 @@
       [
         "key",
         "country"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "initialize": [
@@ -408,6 +468,10 @@
       [
         "req",
         "code"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "mac": [
@@ -458,6 +522,10 @@
       [
         "req",
         "code"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "naics_search": [
@@ -468,6 +536,10 @@
       [
         "key",
         "limit"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "name": [
@@ -478,6 +550,10 @@
       [
         "key",
         "country"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "npi": [
@@ -526,6 +602,10 @@
       [
         "key",
         "country"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "postal_distance": [
@@ -540,6 +620,10 @@
       [
         "key",
         "country"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "postal_nearby": [
@@ -558,6 +642,10 @@
       [
         "key",
         "unit"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "state": [
@@ -568,6 +656,10 @@
       [
         "key",
         "country"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "state_districts": [
@@ -578,6 +670,16 @@
       [
         "key",
         "country"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "swift": [
+      [
+        "req",
+        "code"
       ]
     ],
     "tariff": [
@@ -612,6 +714,10 @@
       [
         "key",
         "to"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "time_at": [
@@ -630,6 +736,10 @@
       [
         "key",
         "to"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "timezone": [
@@ -644,6 +754,10 @@
       [
         "key",
         "to"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "timezone_at": [
@@ -658,6 +772,10 @@
       [
         "key",
         "at"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "useragent": [
@@ -714,12 +832,6 @@
       [
         "key",
         "date"
-      ]
-    ],
-    "swift": [
-      [
-        "req",
-        "code"
       ]
     ]
   },

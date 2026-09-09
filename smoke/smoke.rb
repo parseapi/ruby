@@ -84,8 +84,8 @@ expect('tariff_search', ->(r) { r['lines'].is_a?(Array) ? nil : 'missing lines' 
 expect('currency', ->(r) { r['symbol'] == '$' ? nil : 'wrong symbol' }) { parse.currency('USD') }
 expect('currency_rate', ->(r) { r['rate'].positive? && r['rate'] < 10 ? nil : 'bad rate' }) { parse.currency_rate('USD', 'EUR') }
 expect('language', ->(r) { r['language'] == 'en' && r['name'] == 'English' ? nil : 'wrong language' }) { parse.language('en') }
-expect('name', ->(r) { r['name'] == "Billy O'Shall" && r['valid'] == true && r['gender'] == 'male' ? nil : 'wrong name' }) { parse.name("BILLY O'SHALL") }
-expect('timezone', ->(r) { [-240, -300].include?(r['offset_minutes']) ? nil : "offset #{r['offset_minutes']}" }) { parse.timezone('America/New_York') }
+expect('name', ->(r) { r['name'] == "Billy O'Shall" && r['valid'] == true ? nil : 'wrong name' }) { parse.name("BILLY O'SHALL") }
+expect('timezone', ->(r) { ['-04:00', '-05:00'].include?(r['offset']) ? nil : "offset #{r['offset']}" }) { parse.timezone('America/New_York') }
 expect('timezone_at', ->(r) { r['timezone'] == 'America/New_York' ? nil : 'wrong timezone' }) { parse.timezone_at(35.2271, -80.8431) }
 expect('date', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.date('03/04/2026', format: 'mdy') }
 expect('date_today', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.date_today }

@@ -81,58 +81,58 @@ module ParseAPI
 			get("/bloc/#{seg(code)}/countries")
 		end
 
-		def country(code)
-			get("/country/#{seg(code)}")
+		def country(code, deep: false)
+			get("/country/#{seg(code)}", deep: deep)
 		end
 
 		def country_states(code)
 			get("/country/#{seg(code)}/states")
 		end
 
-		def state(code, country: nil)
-			get("/state/#{seg(code)}", country: country)
+		def state(code, country: nil, deep: false)
+			get("/state/#{seg(code)}", country: country, deep: deep)
 		end
 
-		def state_districts(code, country: nil)
-			get("/state/#{seg(code)}/districts", country: country)
+		def state_districts(code, country: nil, deep: false)
+			get("/state/#{seg(code)}/districts", country: country, deep: deep)
 		end
 
-		def district(code, country: nil, state: nil)
-			get("/district/#{seg(code)}", country: country, state: state)
+		def district(code, country: nil, state: nil, deep: false)
+			get("/district/#{seg(code)}", country: country, state: state, deep: deep)
 		end
 
-		def city(name, country: nil, state: nil)
-			get("/city/#{seg(name)}", country: country, state: state)
+		def city(name, country: nil, state: nil, deep: false)
+			get("/city/#{seg(name)}", country: country, state: state, deep: deep)
 		end
 
-		def city_id(id)
-			get("/city/id/#{seg(id)}")
+		def city_id(id, deep: false)
+			get("/city/id/#{seg(id)}", deep: deep)
 		end
 
-		def city_search(query, country: nil, state: nil, limit: nil)
-			get('/city', q: query, country: country, state: state, limit: limit)
+		def city_search(query, country: nil, state: nil, limit: nil, deep: false)
+			get('/city', q: query, country: country, state: state, limit: limit, deep: deep)
 		end
 
-		def city_nearest(lat, lon)
-			get('/city', lat: lat, lon: lon)
+		def city_nearest(lat, lon, deep: false)
+			get('/city', lat: lat, lon: lon, deep: deep)
 		end
 
-		def city_nearby(name, radius: nil, unit: nil, country: nil, state: nil, limit: nil)
-			get("/city/#{seg(name)}/nearby", radius: radius, unit: unit, country: country, state: state, limit: limit)
+		def city_nearby(name, radius: nil, unit: nil, country: nil, state: nil, limit: nil, deep: false)
+			get("/city/#{seg(name)}/nearby", radius: radius, unit: unit, country: country, state: state, limit: limit, deep: deep)
 		end
 
 		# Look up a postal area. Pass country when known. Check nullable coordinates before another
 		# location lookup.
-		def postal(code, country: nil)
-			get("/postal/#{seg(code)}", country: country)
+		def postal(code, country: nil, deep: false)
+			get("/postal/#{seg(code)}", country: country, deep: deep)
 		end
 
-		def postal_nearby(code, country: nil, radius: nil, unit: nil)
-			get("/postal/#{seg(code)}/nearby", country: country, radius: radius, unit: unit)
+		def postal_nearby(code, country: nil, radius: nil, unit: nil, deep: false)
+			get("/postal/#{seg(code)}/nearby", country: country, radius: radius, unit: unit, deep: deep)
 		end
 
-		def postal_distance(from, to, country: nil)
-			get("/postal/#{seg(from)}/distance/#{seg(to)}", country: country)
+		def postal_distance(from, to, country: nil, deep: false)
+			get("/postal/#{seg(from)}/distance/#{seg(to)}", country: country, deep: deep)
 		end
 
 		def address(address, country: nil, deep: false)
@@ -166,8 +166,8 @@ module ParseAPI
 			get("/swift/#{seg(code)}")
 		end
 
-		def iban(iban, country: nil)
-			get("/iban/#{seg(iban)}", country: country)
+		def iban(iban, country: nil, deep: false)
+			get("/iban/#{seg(iban)}", country: country, deep: deep)
 		end
 
 		# Look up a 6-11 digit card prefix, preserving leading zeros.
@@ -180,14 +180,14 @@ module ParseAPI
 		end
 
 		# Parse a phone number and its formats. Pass country for national numbers when needed. Deep
-		# returns an empty object. Carrier, caller, and HLR are separate metered lookups.
+		# adds numbering-plan geography on every plan. Carrier, caller, and HLR are separate metered lookups.
 		def phone(number, country: nil, deep: false)
 			get("/phone/#{seg(number)}", country: country, deep: deep)
 		end
 
 		# Request a metered carrier lookup. No automatic retries by default.
-		def carrier(number, country: nil)
-			get("/carrier/#{seg(number)}", country: country)
+		def carrier(number, country: nil, deep: false)
+			get("/carrier/#{seg(number)}", country: country, deep: deep)
 		end
 
 		# Request a metered caller-name lookup for a NANP number. No automatic retries by default.
@@ -197,10 +197,11 @@ module ParseAPI
 
 		# Request a metered live-status lookup. nil status means unconfirmed. No automatic retries by
 		# default.
-		def hlr(number, country: nil)
-			get("/hlr/#{seg(number)}", country: country)
+		def hlr(number, country: nil, deep: false)
+			get("/hlr/#{seg(number)}", country: country, deep: deep)
 		end
 
+		# Check whether a domain is registered. Deep adds registration dates, registrar, status and DNSSEC on paid plans.
 		def domain(domain, deep: false)
 			get("/domain/#{seg(domain)}", deep: deep)
 		end
@@ -232,13 +233,13 @@ module ParseAPI
 		end
 
 		# US NAICS 2022 definition and hierarchy.
-		def naics(code)
-			get("/naics/#{seg(code)}")
+		def naics(code, deep: false)
+			get("/naics/#{seg(code)}", deep: deep)
 		end
 
 		# Keyword search. Limit defaults to 10 and accepts 1-50.
-		def naics_search(query, limit: nil)
-			get('/naics', q: query, limit: limit)
+		def naics_search(query, limit: nil, deep: false)
+			get('/naics', q: query, limit: limit, deep: deep)
 		end
 
 		def tariff(code, deep: false, origin: nil)
@@ -249,45 +250,45 @@ module ParseAPI
 			get('/tariff', q: query)
 		end
 
-		def currency(code)
-			get("/currency/#{seg(code)}")
+		def currency(code, deep: false)
+			get("/currency/#{seg(code)}", deep: deep)
 		end
 
 		def currency_rate(base, quote, date: nil, amount: nil)
 			get("/currency/#{seg(base)}/#{seg(quote)}", date: date, amount: amount)
 		end
 
-		def language(code)
-			get("/language/#{seg(code)}")
+		def language(code, deep: false)
+			get("/language/#{seg(code)}", deep: deep)
 		end
 
-		def name(name, country: nil)
-			get("/name/#{seg(name)}", country: country)
+		def name(name, country: nil, deep: false)
+			get("/name/#{seg(name)}", country: country, deep: deep)
 		end
 
 		# Current local time, UTC by default. With to, offsetless at is source wall time.
-		def time(timezone = nil, at: nil, to: nil)
-			get(timezone.nil? ? '/time' : "/time/#{seg(timezone)}", at: at, to: to)
+		def time(timezone = nil, at: nil, to: nil, deep: false)
+			get(timezone.nil? ? '/time' : "/time/#{seg(timezone)}", at: at, to: to, deep: deep)
 		end
 
-		def time_at(lat, lon, at: nil, to: nil)
-			get('/time', lat: lat, lon: lon, at: at, to: to)
+		def time_at(lat, lon, at: nil, to: nil, deep: false)
+			get('/time', lat: lat, lon: lon, at: at, to: to, deep: deep)
 		end
 
-		def timezone(id, at: nil, to: nil)
-			get("/timezone/#{seg(id)}", at: at, to: to)
+		def timezone(id, at: nil, to: nil, deep: false)
+			get("/timezone/#{seg(id)}", at: at, to: to, deep: deep)
 		end
 
-		def timezone_at(lat, lon, at: nil)
-			get('/timezone', lat: lat, lon: lon, at: at)
+		def timezone_at(lat, lon, at: nil, deep: false)
+			get('/timezone', lat: lat, lon: lon, at: at, deep: deep)
 		end
 
-		def date(date, format: nil, to: nil)
-			get("/date/#{seg(date)}", format: format, to: to)
+		def date(date, format: nil, to: nil, deep: false)
+			get("/date/#{seg(date)}", format: format, to: to, deep: deep)
 		end
 
-		def date_today(to: nil)
-			get('/date', to: to)
+		def date_today(to: nil, deep: false)
+			get('/date', to: to, deep: deep)
 		end
 
 		def holiday(country, year: nil)
@@ -312,12 +313,12 @@ module ParseAPI
 			get('/weather', lat: lat, lon: lon, deep: deep, date: date)
 		end
 
-		def emoji(emoji)
-			get("/emoji/#{seg(emoji)}")
+		def emoji(emoji, deep: false)
+			get("/emoji/#{seg(emoji)}", deep: deep)
 		end
 
-		def emoji_search(query, limit: nil)
-			get('/emoji', q: query, limit: limit)
+		def emoji_search(query, limit: nil, deep: false)
+			get('/emoji', q: query, limit: limit, deep: deep)
 		end
 
 		# Parse or convert a measurement. Amount is a decimal string. Without to, use the
