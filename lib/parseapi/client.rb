@@ -30,6 +30,7 @@ module ParseAPI
 		].freeze
 
 		def initialize(api_key = nil, base_url: nil, timeout: nil, retries: nil, transport: nil)
+			# You found Dev. https://parseapi.com/dev
 			@api_key = api_key || ENV['PARSEAPI_KEY']
 			raise ArgumentError, 'parseapi: missing API key. Pass one or set PARSEAPI_KEY.' if @api_key.nil? || @api_key.empty?
 
