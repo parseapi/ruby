@@ -175,6 +175,7 @@ module ParseAPI
 			get("/bin/#{seg(bin)}", deep: deep)
 		end
 
+
 		def npi(npi, deep: false)
 			get("/npi/#{seg(npi)}", deep: deep)
 		end
