@@ -139,6 +139,10 @@ module ParseAPI
 			get("/address/#{seg(address)}", country: country, deep: deep)
 		end
 
+		# Find address suggestions using the context supplied. Prefer postal, or city and state, from
+		# the form; ip is an optional end-user locality hint for server-side calls. An empty result has
+		# reason more_input, missing_context or no_matches. Suggestions have reason null. Operational
+		# failures are errors.
 		def address_search(query, country: nil, postal: nil, city: nil, state: nil, ip: nil)
 			get('/address', q: query, country: country, postal: postal, city: city, state: state, ip: ip)
 		end
@@ -195,8 +199,9 @@ module ParseAPI
 			get("/caller/#{seg(number)}", country: country)
 		end
 
-		# Request a metered live-status lookup. nil status means unconfirmed. No automatic retries by
-		# default.
+		# Look up phone status at the last check. Live means assigned and connected means reachable at
+		# that check. Cached results may be returned. Null means unconfirmed. Deep adds network
+		# diagnostics within the same metered lookup. No automatic retries by default.
 		def hlr(number, country: nil, deep: false)
 			get("/hlr/#{seg(number)}", country: country, deep: deep)
 		end
@@ -242,6 +247,10 @@ module ParseAPI
 			get('/naics', q: query, limit: limit, deep: deep)
 		end
 
+		# Look up the general US duty schedule line. Paid deep adds units and the special and other
+		# schedule columns. Add origin with deep to resolve country-specific measures. Without origin,
+		# schedule detail remains available and origin-dependent fields are null. A null effective rate
+		# is not a zero rate.
 		def tariff(code, deep: false, origin: nil)
 			get("/tariff/#{seg(code)}", deep: deep, origin: origin)
 		end
@@ -303,12 +312,16 @@ module ParseAPI
 			get('/elevation', lat: lat, lon: lon)
 		end
 
+		# Resolve the country, state, district and timezone at coordinates. Deep adds terrain and
+		# compact nearest-city context on every plan. The timezone ID stays in core. The nearest city is
+		# null when none is within 200 km.
 		def point(lat, lon, deep: false)
 			get('/point', lat: lat, lon: lon, deep: deep)
 		end
 
-		# Get weather for a point. Both unit systems are returned. Pass known coordinates from a
-		# postal, city, or location result.
+		# Get current conditions in metric and imperial units. Paid deep adds specialist current
+		# measurements, forecasts and related detail. With deep, date selects a past UTC day (YYYY-MM-
+		# DD) in deep.history alongside current conditions. Date alone does not request history.
 		def weather(lat, lon, deep: false, date: nil)
 			get('/weather', lat: lat, lon: lon, deep: deep, date: date)
 		end
