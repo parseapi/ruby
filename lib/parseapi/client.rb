@@ -255,6 +255,15 @@ module ParseAPI
 			get("/name/#{seg(name)}", country: country)
 		end
 
+		# Current local time, UTC by default. With to, offsetless at is source wall time.
+		def time(timezone = nil, at: nil, to: nil)
+			get(timezone.nil? ? '/time' : "/time/#{seg(timezone)}", at: at, to: to)
+		end
+
+		def time_at(lat, lon, at: nil, to: nil)
+			get('/time', lat: lat, lon: lon, at: at, to: to)
+		end
+
 		def timezone(id, at: nil, to: nil)
 			get("/timezone/#{seg(id)}", at: at, to: to)
 		end

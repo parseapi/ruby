@@ -590,6 +590,38 @@
         "query"
       ]
     ],
+    "time": [
+      [
+        "opt",
+        "timezone"
+      ],
+      [
+        "key",
+        "at"
+      ],
+      [
+        "key",
+        "to"
+      ]
+    ],
+    "time_at": [
+      [
+        "req",
+        "lat"
+      ],
+      [
+        "req",
+        "lon"
+      ],
+      [
+        "key",
+        "at"
+      ],
+      [
+        "key",
+        "to"
+      ]
+    ],
     "timezone": [
       [
         "req",
