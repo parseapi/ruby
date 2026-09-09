@@ -161,6 +161,11 @@ module ParseAPI
 			get("/vat/#{seg(number)}", country: country, deep: deep, from: from)
 		end
 
+		# Check BIC syntax and find a known institution. A nil name means unknown.
+		def swift(code)
+			get("/swift/#{seg(code)}")
+		end
+
 		def iban(iban, country: nil)
 			get("/iban/#{seg(iban)}", country: country)
 		end

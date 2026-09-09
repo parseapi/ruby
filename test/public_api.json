@@ -715,6 +715,12 @@
         "key",
         "date"
       ]
+    ],
+    "swift": [
+      [
+        "req",
+        "code"
+      ]
     ]
   },
   "ParseAPI::Error": {
