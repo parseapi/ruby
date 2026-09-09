@@ -444,6 +444,22 @@
         "domain"
       ]
     ],
+    "naics": [
+      [
+        "req",
+        "code"
+      ]
+    ],
+    "naics_search": [
+      [
+        "req",
+        "query"
+      ],
+      [
+        "key",
+        "limit"
+      ]
+    ],
     "name": [
       [
         "req",

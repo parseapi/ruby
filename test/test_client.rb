@@ -51,6 +51,10 @@ class TestUrlMapping < Minitest::Test
 	end
 
 	TABLE = {
+		'naics' => [->(p) { p.naics('31-33') }, 'https://api.parseapi.com/naics/31-33'],
+		'naics encoded' => [->(p) { p.naics('54/11') }, 'https://api.parseapi.com/naics/54%2F11'],
+		'naics_search' => [->(p) { p.naics_search('coffee & tea', limit: 5) }, 'https://api.parseapi.com/naics?q=coffee+%26+tea&limit=5'],
+		'naics_search default' => [->(p) { p.naics_search('plumbing') }, 'https://api.parseapi.com/naics?q=plumbing'],
 		'dns' => [->(p) { p.dns('example.com') }, 'https://api.parseapi.com/dns/example.com'],
 		'dns type' => [->(p) { p.dns('_dmarc.bücher.example.', type: 'txt') }, 'https://api.parseapi.com/dns/_dmarc.b%C3%BCcher.example.?type=txt'],
 		'name country' => [->(p) { p.name('Andrea / Smith', country: 'IT') }, 'https://api.parseapi.com/name/Andrea%20%2F%20Smith?country=IT'],

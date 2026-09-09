@@ -221,6 +221,16 @@ module ParseAPI
 			get("/vin/#{seg(vin)}", deep: deep)
 		end
 
+		# US NAICS 2022 definition and hierarchy.
+		def naics(code)
+			get("/naics/#{seg(code)}")
+		end
+
+		# Keyword search. Limit defaults to 10 and accepts 1-50.
+		def naics_search(query, limit: nil)
+			get('/naics', q: query, limit: limit)
+		end
+
 		def tariff(code, deep: false, origin: nil)
 			get("/tariff/#{seg(code)}", deep: deep, origin: origin)
 		end
