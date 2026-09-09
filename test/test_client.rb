@@ -351,3 +351,16 @@ class TestMeasure < Minitest::Test
 		assert_equal 1, client.calls.length
 	end
 end
+
+
+class TestNAICSEvidence < Minitest::Test
+ def test_exclusions_and_match_pass_through
+  records = JSON.parse(%q([{"naics":"541511","name":"Custom Computer Programming Services","description":null,"level":6,"parent":"54151","parent_name":"Computer Systems Design and Related Services","children":[],"year":2022,"country":"US"},{"naics":"541511","name":"Custom Computer Programming Services","description":null,"level":6,"parent":"54151","parent_name":"Computer Systems Design and Related Services","children":[],"year":2022,"country":"US","exclusions":null,"match":null},{"naics":"541511","name":"Custom Computer Programming Services","description":null,"level":6,"parent":"54151","parent_name":"Computer Systems Design and Related Services","children":[],"year":2022,"country":"US","exclusions":[],"match":{"field":"future-field","text":"Future matching evidence","corrections":[],"future":true}},{"naics":"541511","name":"Custom Computer Programming Services","description":null,"level":6,"parent":"54151","parent_name":"Computer Systems Design and Related Services","children":[],"year":2022,"country":"US","exclusions":[{"description":"Designing integrated computer systems","codes":[{"naics":"541512","name":"Computer Systems Design Services"}]},{"description":"Activities classified elsewhere","codes":[]}],"match":{"field":"term","text":"Computer software programming services","corrections":[{"from":"sofware","to":"software"}]},"future":true}]))
+  records.each do |record|
+   body = { 'q' => 'sofware', 'year' => 2022, 'country' => 'US', 'results' => [record] }
+   client = StubClient.new('test_key', retries: 0, responses: [[200, {}, JSON.generate(body)]])
+   assert_equal body, client.naics_search('sofware')
+   assert_equal 'https://api.parseapi.com/naics?q=sofware', client.calls[0][:url]
+  end
+ end
+end
