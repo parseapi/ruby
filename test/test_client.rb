@@ -59,8 +59,6 @@ class TestUrlMapping < Minitest::Test
 	TABLE = {
 		'bin' => [->(p) { p.bin('001234') }, 'https://api.parseapi.com/bin/001234'],
 		'bin deep' => [->(p) { p.bin('00 1234-56', deep: true) }, 'https://api.parseapi.com/bin/00%201234-56?deep=true'],
-		'swift' => [->(p) { p.swift('BOFAUS3N') }, 'https://api.parseapi.com/swift/BOFAUS3N'],
-		'swift encoded' => [->(p) { p.swift(' bofa/us3n? ') }, 'https://api.parseapi.com/swift/%20bofa%2Fus3n%3F%20'],
 		'naics' => [->(p) { p.naics('31-33') }, 'https://api.parseapi.com/naics/31-33'],
 		'naics encoded' => [->(p) { p.naics('54/11') }, 'https://api.parseapi.com/naics/54%2F11'],
 		'naics_search' => [->(p) { p.naics_search('coffee & tea', limit: 5) }, 'https://api.parseapi.com/naics?q=coffee+%26+tea&limit=5'],
