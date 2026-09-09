@@ -165,6 +165,11 @@ module ParseAPI
 			get("/iban/#{seg(iban)}", country: country)
 		end
 
+		# Look up a 6-11 digit card prefix, preserving leading zeros.
+		def bin(bin, deep: false)
+			get("/bin/#{seg(bin)}", deep: deep)
+		end
+
 		def npi(npi, deep: false)
 			get("/npi/#{seg(npi)}", deep: deep)
 		end

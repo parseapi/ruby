@@ -44,6 +44,12 @@ class TestUrlMapping < Minitest::Test
 		end
 	end
 
+	def test_bin_preserves_null_false_and_prefix
+		body = { 'bin' => '00123456', 'prefix' => '001234', 'country' => nil, 'issuer' => 'Fixture Bank', 'brand' => 'future-brand', 'type' => nil, 'prepaid' => false, 'deep' => {}, 'future' => true }
+		client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+		assert_equal body, client.bin('00 1234-56', deep: true)
+	end
+
 	def test_known_name_does_not_require_gender
 		body = { 'name' => '王', 'valid' => true, 'known' => true, 'countries' => ['CN', 'TW'], 'gender' => nil, 'future' => true }
 		client = stub_client(responses: [[200, {}, JSON.generate(body)]])
@@ -51,6 +57,8 @@ class TestUrlMapping < Minitest::Test
 	end
 
 	TABLE = {
+		'bin' => [->(p) { p.bin('001234') }, 'https://api.parseapi.com/bin/001234'],
+		'bin deep' => [->(p) { p.bin('00 1234-56', deep: true) }, 'https://api.parseapi.com/bin/00%201234-56?deep=true'],
 		'naics' => [->(p) { p.naics('31-33') }, 'https://api.parseapi.com/naics/31-33'],
 		'naics encoded' => [->(p) { p.naics('54/11') }, 'https://api.parseapi.com/naics/54%2F11'],
 		'naics_search' => [->(p) { p.naics_search('coffee & tea', limit: 5) }, 'https://api.parseapi.com/naics?q=coffee+%26+tea&limit=5'],

@@ -59,6 +59,7 @@ expect('address_search', ->(r) { r['addresses'].is_a?(Array) ? nil : 'missing ad
 expect('company', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.company('732829320', country: 'FR') }
 expect('email', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.email('hello@gmail.com') }
 expect('vat', ->(r) { r['valid'] == true && r['country'] == 'DE' ? nil : 'not valid DE' }) { parse.vat('DE136695976') }
+expect('bin', ->(r) { r['bin'] == '000000' && r['deep'] == {} ? nil : 'BIN echo or deep mismatch' }) { parse.bin('00 0000', deep: true) }
 expect('iban', ->(r) { r['valid'] == true && r['country'] == 'DE' && r['bank'] == '37040044' ? nil : 'not valid DE' }) { parse.iban('DE89370400440532013000') }
 expect('iban junk', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.iban('hello') }
 expect('npi', ->(r) { r['valid'] == true && r['registered'] == true ? nil : 'not registered' }) { parse.npi('1881018208') }
