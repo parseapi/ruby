@@ -51,7 +51,7 @@ class TestUrlMapping < Minitest::Test
 	end
 
 	def test_known_name_does_not_require_gender
-		body = { 'name' => '王', 'valid' => true, 'known' => true, 'countries' => ['CN', 'TW'], 'gender' => nil, 'future' => true }
+		body = { 'name' => '王', 'valid' => true, 'known' => true, 'gender' => nil, 'future' => true }
 		client = stub_client(responses: [[200, {}, JSON.generate(body)]])
 		assert_equal body, client.name('王', country: 'CN')
 	end
