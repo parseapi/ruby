@@ -57,83 +57,83 @@ module ParseAPI
 
 
 		# Look up an IP. Deep enrichment is included with a paid plan, without a separate check meter.
-		def ip(ip, deep: false)
-			get("/ip/#{seg(ip)}", deep: deep)
+		def ip(ip, deep: false, lang: nil)
+			get("/ip/#{seg(ip)}", deep: deep, lang: lang)
 		end
 
 		# Look up the public IP making this request. On a server, this is the server's IP.
-		def ip_self(deep: false)
-			get('/ip', deep: deep)
+		def ip_self(deep: false, lang: nil)
+			get('/ip', deep: deep, lang: lang)
 		end
 
-		def continent(code)
-			get("/continent/#{seg(code)}")
+		def continent(code, lang: nil)
+			get("/continent/#{seg(code)}", lang: lang)
 		end
 
-		def continent_countries(code)
-			get("/continent/#{seg(code)}/countries")
+		def continent_countries(code, lang: nil)
+			get("/continent/#{seg(code)}/countries", lang: lang)
 		end
 
 		def bloc(code)
 			get("/bloc/#{seg(code)}")
 		end
 
-		def bloc_countries(code)
-			get("/bloc/#{seg(code)}/countries")
+		def bloc_countries(code, lang: nil)
+			get("/bloc/#{seg(code)}/countries", lang: lang)
 		end
 
-		def country(code, deep: false)
-			get("/country/#{seg(code)}", deep: deep)
+		def country(code, deep: false, lang: nil)
+			get("/country/#{seg(code)}", deep: deep, lang: lang)
 		end
 
-		def country_states(code)
-			get("/country/#{seg(code)}/states")
+		def country_states(code, lang: nil)
+			get("/country/#{seg(code)}/states", lang: lang)
 		end
 
-		def state(code, country: nil, deep: false)
-			get("/state/#{seg(code)}", country: country, deep: deep)
+		def state(code, country: nil, deep: false, lang: nil)
+			get("/state/#{seg(code)}", country: country, deep: deep, lang: lang)
 		end
 
-		def state_districts(code, country: nil, deep: false)
-			get("/state/#{seg(code)}/districts", country: country, deep: deep)
+		def state_districts(code, country: nil, deep: false, lang: nil)
+			get("/state/#{seg(code)}/districts", country: country, deep: deep, lang: lang)
 		end
 
-		def district(code, country: nil, state: nil, deep: false)
-			get("/district/#{seg(code)}", country: country, state: state, deep: deep)
+		def district(code, country: nil, state: nil, deep: false, lang: nil)
+			get("/district/#{seg(code)}", country: country, state: state, deep: deep, lang: lang)
 		end
 
-		def city(name, country: nil, state: nil, deep: false)
-			get("/city/#{seg(name)}", country: country, state: state, deep: deep)
+		def city(name, country: nil, state: nil, deep: false, lang: nil)
+			get("/city/#{seg(name)}", country: country, state: state, deep: deep, lang: lang)
 		end
 
-		def city_id(id, deep: false)
-			get("/city/id/#{seg(id)}", deep: deep)
+		def city_id(id, deep: false, lang: nil)
+			get("/city/id/#{seg(id)}", deep: deep, lang: lang)
 		end
 
-		def city_search(query, country: nil, state: nil, limit: nil, deep: false)
-			get('/city', q: query, country: country, state: state, limit: limit, deep: deep)
+		def city_search(query, country: nil, state: nil, limit: nil, deep: false, lang: nil)
+			get('/city', q: query, country: country, state: state, limit: limit, deep: deep, lang: lang)
 		end
 
-		def city_nearest(lat, lon, deep: false)
-			get('/city', lat: lat, lon: lon, deep: deep)
+		def city_nearest(lat, lon, deep: false, lang: nil)
+			get('/city', lat: lat, lon: lon, deep: deep, lang: lang)
 		end
 
-		def city_nearby(name, radius: nil, unit: nil, country: nil, state: nil, limit: nil, deep: false)
-			get("/city/#{seg(name)}/nearby", radius: radius, unit: unit, country: country, state: state, limit: limit, deep: deep)
+		def city_nearby(name, radius: nil, unit: nil, country: nil, state: nil, limit: nil, deep: false, lang: nil)
+			get("/city/#{seg(name)}/nearby", radius: radius, unit: unit, country: country, state: state, limit: limit, deep: deep, lang: lang)
 		end
 
 		# Look up a postal area. Pass country when known. Check nullable coordinates before another
 		# location lookup.
-		def postal(code, country: nil, deep: false)
-			get("/postal/#{seg(code)}", country: country, deep: deep)
+		def postal(code, country: nil, deep: false, lang: nil)
+			get("/postal/#{seg(code)}", country: country, deep: deep, lang: lang)
 		end
 
-		def postal_nearby(code, country: nil, radius: nil, unit: nil, deep: false)
-			get("/postal/#{seg(code)}/nearby", country: country, radius: radius, unit: unit, deep: deep)
+		def postal_nearby(code, country: nil, radius: nil, unit: nil, deep: false, lang: nil)
+			get("/postal/#{seg(code)}/nearby", country: country, radius: radius, unit: unit, deep: deep, lang: lang)
 		end
 
-		def postal_distance(from, to, country: nil, deep: false)
-			get("/postal/#{seg(from)}/distance/#{seg(to)}", country: country, deep: deep)
+		def postal_distance(from, to, country: nil, deep: false, lang: nil)
+			get("/postal/#{seg(from)}/distance/#{seg(to)}", country: country, deep: deep, lang: lang)
 		end
 
 		def address(address, country: nil, deep: false)
@@ -148,8 +148,8 @@ module ParseAPI
 			get('/address', q: query, country: country, postal: postal, city: city, state: state, ip: ip)
 		end
 
-		def company(number, country: nil, deep: false)
-			get("/company/#{seg(number)}", country: country, deep: deep)
+		def company(number, country: nil, deep: false, lang: nil)
+			get("/company/#{seg(number)}", country: country, deep: deep, lang: lang)
 		end
 
 		# Parse an email and check its format and domain. Deep explicitly requests a metered
@@ -176,8 +176,8 @@ module ParseAPI
 		end
 
 
-		def npi(npi, deep: false)
-			get("/npi/#{seg(npi)}", deep: deep)
+		def npi(npi, deep: false, lang: nil)
+			get("/npi/#{seg(npi)}", deep: deep, lang: lang)
 		end
 
 		# Parse a phone number and its formats. Pass country for national numbers when needed. Deep
@@ -208,8 +208,8 @@ module ParseAPI
 			get("/domain/#{seg(domain)}", deep: deep)
 		end
 
-		def asn(asn)
-			get("/asn/#{seg(asn)}")
+		def asn(asn, lang: nil)
+			get("/asn/#{seg(asn)}", lang: lang)
 		end
 
 		def mac(mac)
@@ -256,16 +256,16 @@ module ParseAPI
 			get('/tariff', q: query)
 		end
 
-		def currency(code, deep: false)
-			get("/currency/#{seg(code)}", deep: deep)
+		def currency(code, deep: false, lang: nil)
+			get("/currency/#{seg(code)}", deep: deep, lang: lang)
 		end
 
 		def currency_rate(base, quote, date: nil, amount: nil)
 			get("/currency/#{seg(base)}/#{seg(quote)}", date: date, amount: amount)
 		end
 
-		def language(code, deep: false)
-			get("/language/#{seg(code)}", deep: deep)
+		def language(code, deep: false, lang: nil)
+			get("/language/#{seg(code)}", deep: deep, lang: lang)
 		end
 
 		# Name locale selects CLDR formatting, default en, without changing parsing or gender context.
@@ -274,28 +274,28 @@ module ParseAPI
 		end
 
 		# Current local time, UTC by default. With to, offsetless at is source wall time.
-		def time(timezone = nil, at: nil, to: nil, deep: false)
-			get(timezone.nil? ? '/time' : "/time/#{seg(timezone)}", at: at, to: to, deep: deep)
+		def time(timezone = nil, at: nil, to: nil, deep: false, lang: nil)
+			get(timezone.nil? ? '/time' : "/time/#{seg(timezone)}", at: at, to: to, deep: deep, lang: lang)
 		end
 
-		def time_at(lat, lon, at: nil, to: nil, deep: false)
-			get('/time', lat: lat, lon: lon, at: at, to: to, deep: deep)
+		def time_at(lat, lon, at: nil, to: nil, deep: false, lang: nil)
+			get('/time', lat: lat, lon: lon, at: at, to: to, deep: deep, lang: lang)
 		end
 
-		def timezone(id, at: nil, to: nil, deep: false)
-			get("/timezone/#{seg(id)}", at: at, to: to, deep: deep)
+		def timezone(id, at: nil, to: nil, deep: false, lang: nil)
+			get("/timezone/#{seg(id)}", at: at, to: to, deep: deep, lang: lang)
 		end
 
-		def timezone_at(lat, lon, at: nil, deep: false)
-			get('/timezone', lat: lat, lon: lon, at: at, deep: deep)
+		def timezone_at(lat, lon, at: nil, deep: false, lang: nil)
+			get('/timezone', lat: lat, lon: lon, at: at, deep: deep, lang: lang)
 		end
 
-		def date(date, format: nil, to: nil, deep: false)
-			get("/date/#{seg(date)}", format: format, to: to, deep: deep)
+		def date(date, format: nil, to: nil, deep: false, lang: nil)
+			get("/date/#{seg(date)}", format: format, to: to, deep: deep, lang: lang)
 		end
 
-		def date_today(to: nil, deep: false)
-			get('/date', to: to, deep: deep)
+		def date_today(to: nil, deep: false, lang: nil)
+			get('/date', to: to, deep: deep, lang: lang)
 		end
 
 		def holiday(country, year: nil)
@@ -313,8 +313,8 @@ module ParseAPI
 		# Resolve the country, state, district and timezone at coordinates. Deep adds terrain and
 		# compact nearest-city context on every plan. The timezone ID stays in core. The nearest city is
 		# null when none is within 200 km.
-		def point(lat, lon, deep: false)
-			get('/point', lat: lat, lon: lon, deep: deep)
+		def point(lat, lon, deep: false, lang: nil)
+			get('/point', lat: lat, lon: lon, deep: deep, lang: lang)
 		end
 
 		# Get current conditions in metric and imperial units. Paid deep adds specialist current
@@ -324,12 +324,12 @@ module ParseAPI
 			get('/weather', lat: lat, lon: lon, deep: deep, date: date)
 		end
 
-		def emoji(emoji, deep: false)
-			get("/emoji/#{seg(emoji)}", deep: deep)
+		def emoji(emoji, deep: false, lang: nil)
+			get("/emoji/#{seg(emoji)}", deep: deep, lang: lang)
 		end
 
-		def emoji_search(query, limit: nil, deep: false)
-			get('/emoji', q: query, limit: limit, deep: deep)
+		def emoji_search(query, limit: nil, deep: false, lang: nil)
+			get('/emoji', q: query, limit: limit, deep: deep, lang: lang)
 		end
 
 		# Parse or convert a measurement. Amount is a decimal string. Without to, use the
@@ -339,8 +339,8 @@ module ParseAPI
 		end
 
 		# Discover reviewed units. unit filters compatible conversion targets.
-		def measure_units(query: nil, type: nil, unit: nil)
-			get('/measure/units', q: query, type: type, unit: unit)
+		def measure_units(query: nil, type: nil, unit: nil, lang: nil)
+			get('/measure/units', q: query, type: type, unit: unit, lang: lang)
 		end
 
 		private

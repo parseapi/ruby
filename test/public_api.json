@@ -54,6 +54,10 @@
       [
         "req",
         "asn"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "bin": [
@@ -76,6 +80,10 @@
       [
         "req",
         "code"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "caller": [
@@ -118,6 +126,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "city_id": [
@@ -128,6 +140,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "city_nearby": [
@@ -158,6 +174,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "city_nearest": [
@@ -172,6 +192,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "city_search": [
@@ -194,6 +218,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "close": [],
@@ -209,18 +237,30 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "continent": [
       [
         "req",
         "code"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "continent_countries": [
       [
         "req",
         "code"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "country": [
@@ -231,12 +271,20 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "country_states": [
       [
         "req",
         "code"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "currency": [
@@ -247,6 +295,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "currency_rate": [
@@ -283,6 +335,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "date_today": [
@@ -293,6 +349,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "district": [
@@ -311,6 +371,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "dns": [
@@ -361,6 +425,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "emoji_search": [
@@ -375,6 +443,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "hlr": [
@@ -456,12 +528,20 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "ip_self": [
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "language": [
@@ -472,6 +552,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "mac": [
@@ -510,6 +594,10 @@
       [
         "key",
         "unit"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "mx": [
@@ -568,6 +656,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "phone": [
@@ -596,6 +688,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "postal": [
@@ -610,6 +706,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "postal_distance": [
@@ -628,6 +728,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "postal_nearby": [
@@ -650,6 +754,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "state": [
@@ -664,6 +772,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "state_districts": [
@@ -678,6 +790,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "tariff": [
@@ -716,6 +832,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "time_at": [
@@ -738,6 +858,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "timezone": [
@@ -756,6 +880,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "timezone_at": [
@@ -774,6 +902,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "lang"
       ]
     ],
     "useragent": [

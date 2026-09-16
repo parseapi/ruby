@@ -422,3 +422,39 @@ class TestNameLocal < Minitest::Test
   end
  end
 end
+
+
+class TestLanguageOptions < Minitest::Test
+  OPERATIONS = JSON.parse(%q@[["ip", ["8.8.8.8"], {"deep": true}], ["ip.self", [], {"deep": true}], ["continent", ["EU"], {}], ["continent.countries", ["EU"], {}], ["bloc.countries", ["EU"], {}], ["country", ["DE"], {"deep": true}], ["country.states", ["DE"], {}], ["state", ["CA"], {"country": "US"}], ["state.districts", ["CA"], {"country": "US", "deep": true}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["München"], {"country": "DE"}], ["city.id", ["city_fixture"], {"deep": true}], ["city.search", ["Mün"], {"limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["München"], {"radius": 0, "unit": "km"}], ["postal", ["SW1A 1AA"], {"country": "GB"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["company", ["732829320"], {"country": "FR", "deep": true}], ["npi", ["1881018208"], {"deep": true}], ["asn", ["AS13335"], {}], ["currency", ["USD"], {"deep": true}], ["language", ["ja"], {}], ["time", ["America/New_York"], {"at": "2026-01-01T12:00", "to": "UTC", "deep": true}], ["time.at", [0, 0], {"at": "2026-01-01T12:00Z"}], ["timezone", ["UTC"], {"deep": true}], ["timezone.at", [0, 0], {"deep": true}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-05-01", "deep": true}], ["date.today", [], {"to": "2026-05-01"}], ["point", [0, 0], {"deep": true}], ["emoji", ["😀"], {"deep": true}], ["emoji.search", ["visage"], {"limit": 2}], ["measure.units", [], {"query": "meter", "unit": "m"}]]@).freeze
+
+  def test_display_language_is_per_request_and_preserves_existing_queries
+    OPERATIONS.each do |name, args, options|
+      client = StubClient.new('fixture', retries: 0)
+      method = name.tr('.', '_')
+      keywords = options.transform_keys(&:to_sym)
+      client.public_send(method, *args, **keywords, lang: 'fr-CA')
+      client.public_send(method, *args, **keywords)
+      assert_equal 2, client.calls.length, name
+      translated, original = client.calls.map { |call| URI(call[:url]) }
+      assert_equal original.path, translated.path, name
+      first = URI.decode_www_form(translated.query || '').to_h
+      second = URI.decode_www_form(original.query || '').to_h
+      assert_equal second.merge('lang' => 'fr-CA'), first, name
+      refute second.key?('lang'), name
+    end
+  end
+
+  def test_output_language_keeps_input_controls_and_response_data
+    body = { 'name' => 'Nom traduit', 'name_local' => 'Native name', 'future' => nil }
+    client = StubClient.new('fixture', responses: [[200, {}, JSON.generate(body)], [200, {}, '{}']])
+    assert_equal body, client.date('03/04/2026', format: 'dmy', lang: 'en-US')
+    client.measure('1,5 m', locale: 'de-DE', to: 'cm')
+    assert_equal 'dmy', URI.decode_www_form(URI(client.calls[0][:url]).query).to_h['format']
+    query = URI.decode_www_form(URI(client.calls[1][:url]).query).to_h
+    assert_equal 'de-DE', query['locale']
+    refute query.key?('lang')
+    %i[bloc currency_rate measure holiday name email phone address].each do |method|
+      refute ParseAPI::Client.instance_method(method).parameters.any? { |_, name| name == :lang }, method
+    end
+  end
+end
