@@ -458,3 +458,25 @@ class TestLanguageOptions < Minitest::Test
     end
   end
 end
+
+class TestVersion < Minitest::Test
+	def test_contract_pin_survives_retry_self_and_useragent
+		calls = []
+		client = ParseAPI.new('same-production-key', transport: lambda { |url, headers|
+			calls << [url, headers]
+			calls.length == 1 ? [503, { 'retry-after' => '0' }, '{"code":"unavailable"}'] : [200, {}, '{}']
+		})
+		client.country('US')
+		client.ip_self
+		client.useragent('Custom browser')
+		assert_equal ['/country/US', '/country/US', '/ip', '/useragent'], calls.map { |url, _headers| URI(url).path }
+		calls.each do |url, headers|
+			assert_equal '2.0.0', headers['Parse-Version']
+			assert_equal 'same-production-key', headers['X-API-Key']
+			assert_nil URI(url).query
+		end
+		assert_equal 'Custom browser', calls.last[1]['User-Agent']
+	ensure
+		client&.close
+	end
+end

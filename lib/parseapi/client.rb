@@ -18,6 +18,8 @@ module ParseAPI
 	end
 
 	class Client
+		API_VERSION = '2.0.0'.freeze
+		private_constant :API_VERSION
 		DEFAULT_BASE_URL = 'https://api.parseapi.com'.freeze
 		DEFAULT_TIMEOUT = 10
 		DEFAULT_RETRIES = 2
@@ -381,7 +383,7 @@ module ParseAPI
 		end
 
 		def request_headers(extra)
-			{ 'X-API-Key' => @api_key, 'User-Agent' => "parseapi-ruby/#{VERSION}" }.merge(extra)
+			{ 'X-API-Key' => @api_key, 'User-Agent' => "parseapi-ruby/#{VERSION}" }.merge(extra).merge('Parse-Version' => API_VERSION)
 		end
 
 		# Returns [status, headers_hash, body_string]. Overridden in tests.
