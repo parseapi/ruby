@@ -224,7 +224,9 @@
         "lang"
       ]
     ],
-    "close": [],
+    "close": [
+
+    ],
     "company": [
       [
         "req",
@@ -519,7 +521,9 @@
         "transport"
       ]
     ],
-    "inspect": [],
+    "inspect": [
+
+    ],
     "ip": [
       [
         "req",
@@ -966,8 +970,12 @@
     ]
   },
   "ParseAPI::Error": {
-    "code": [],
-    "docs": [],
+    "code": [
+
+    ],
+    "docs": [
+
+    ],
     "initialize": [
       [
         "keyreq",
@@ -990,7 +998,11 @@
         "request_id"
       ]
     ],
-    "request_id": [],
-    "status": []
+    "request_id": [
+
+    ],
+    "status": [
+
+    ]
   }
 }
