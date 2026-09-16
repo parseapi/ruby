@@ -85,6 +85,7 @@ parse.currency_rate('USD', 'EUR')
 parse.language('en')
 parse.name('BILLY OSHALL')
 parse.name('Andrea', country: 'IT', deep: true)
+parse.name('Robert James Smith', deep: true, name_locale: 'en')
 parse.time # UTC now
 parse.time('America/New_York')
 parse.time('America/New_York', at: '2026-09-05T15:00', to: 'Europe/London')
@@ -118,6 +119,8 @@ NAICS paid deep records include classification `deep.exclusions`, each with a de
 Each lookup returns a plain hash with string keys. Related lookups are separate calls, such as `country_states('US')`. Reading the result makes no further requests. New response fields and `nil` values are preserved.
 
 DNS uses pooled requests on every plan. Omit `type` to check A, AAAA, CNAME, MX, NS, TXT, SOA, CAA, SRV and PTR. Records contain `name`, `type`, `ttl` in seconds and a DNS presentation `value`. TXT values retain quoting and chunk boundaries. A selected question can include its CNAME chain. Empty records mean no records. Lookup failures remain errors.
+
+Name paid deep includes flat `short`, `directory`, and `initials` fields beside `gender` and `salutation`. `name_locale` selects CLDR formatting rules and defaults to `en`. It changes formatting only. Country remains gender context, and unavailable formatting is null. Older responses may omit these fields.
 
 ## Time
 

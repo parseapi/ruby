@@ -554,6 +554,10 @@
       [
         "key",
         "deep"
+      ],
+      [
+        "key",
+        "name_locale"
       ]
     ],
     "npi": [

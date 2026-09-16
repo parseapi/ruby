@@ -50,10 +50,21 @@ class TestUrlMapping < Minitest::Test
 		assert_equal body, client.bin('00 1234-56', deep: true)
 	end
 
-	def test_known_name_does_not_require_gender
-		body = { 'name' => '王', 'valid' => true, 'known' => true, 'gender' => nil, 'future' => true }
+	def test_name_preserves_nullable_evidence_and_future_fields
+		body = { 'name' => '王', 'valid' => true, 'deep' => { 'gender' => nil, 'salutation' => nil }, 'future' => true }
 		client = stub_client(responses: [[200, {}, JSON.generate(body)]])
-		assert_equal body, client.name('王', country: 'CN')
+		assert_equal body, client.name('王', country: 'CN', deep: true)
+	end
+
+	def test_name_formatting_locale_and_nullable_results
+		[{ 'short' => 'R.J. Smith', 'directory' => 'Smith, Robert James', 'initials' => 'RJS' }, { 'short' => nil, 'directory' => nil, 'initials' => nil }, { 'gender' => nil }, {}].each do |detail|
+			body = { 'name' => 'Robert James Smith', 'deep' => detail }
+			client = stub_client(responses: [[200, {}, JSON.generate(body)], [200, {}, JSON.generate(body)]])
+			assert_equal body, client.name('Robert James Smith', country: 'US', deep: true, name_locale: 'en-GB')
+			assert_equal 'https://api.parseapi.com/name/Robert%20James%20Smith?country=US&deep=true&name_locale=en-GB', client.calls[0][:url]
+			client.name('Andrea', country: 'IT', deep: true)
+			assert_equal 'https://api.parseapi.com/name/Andrea?country=IT&deep=true', client.calls[1][:url]
+		end
 	end
 
 	TABLE = {

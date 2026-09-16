@@ -268,8 +268,9 @@ module ParseAPI
 			get("/language/#{seg(code)}", deep: deep)
 		end
 
-		def name(name, country: nil, deep: false)
-			get("/name/#{seg(name)}", country: country, deep: deep)
+		# Name locale selects CLDR formatting, default en, without changing parsing or gender context.
+		def name(name, country: nil, deep: false, name_locale: nil)
+			get("/name/#{seg(name)}", country: country, deep: deep, name_locale: name_locale)
 		end
 
 		# Current local time, UTC by default. With to, offsetless at is source wall time.
