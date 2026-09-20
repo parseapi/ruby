@@ -36,6 +36,14 @@ class TestUrlMapping < Minitest::Test
 		StubClient.new('test_key_123', retries: 0, **kwargs)
 	end
 
+	def test_email_enrichment_preserves_false_null_and_future_codes
+		[{}, { 'deep' => {} }, { 'deep' => { 'first_name' => nil, 'no_reply' => nil, 'tag' => nil, 'mail_provider' => nil, 'status' => nil, 'reason' => nil } }, { 'deep' => { 'first_name' => 'Jane', 'no_reply' => false, 'tag' => 'news', 'mail_provider' => 'future-provider', 'deliverable' => true, 'catchall' => false, 'status' => 'future-status', 'reason' => 'future_reason' }, 'future' => true }].each do |extra|
+			body = { 'email' => 'jane.doe+news@example.com' }.merge(extra)
+			client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+			assert_equal body, client.email(body['email'], deep: true)
+		end
+	end
+
 	def test_dns_preserves_presentation_and_empty_records
 		[[], [{ 'name' => 'example.com.', 'type' => 'TXT', 'ttl' => 0, 'value' => '"one" "two"', 'future' => nil }]].each do |records|
 			body = { 'domain' => 'example.com', 'records' => records, 'future' => true }
