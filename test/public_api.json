@@ -764,6 +764,20 @@
         "lang"
       ]
     ],
+    "stack": [
+      [
+        "req",
+        "domain"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "pretty"
+      ]
+    ],
     "state": [
       [
         "req",

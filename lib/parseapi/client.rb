@@ -38,6 +38,7 @@ module ParseAPI
 
 			@base_url = URI((base_url || ENV['PARSEAPI_BASE_URL'] || DEFAULT_BASE_URL).sub(%r{/+\z}, ''))
 			@timeout = timeout || DEFAULT_TIMEOUT
+			@timeout_explicit = !timeout.nil?
 			@retries = retries
 			raise ArgumentError, 'parseapi: timeout must be a finite positive number.' unless @timeout.is_a?(Numeric) && @timeout.finite? && @timeout > 0
 			raise ArgumentError, 'parseapi: retries must be a non-negative integer or nil.' unless @retries.nil? || (@retries.is_a?(Integer) && @retries >= 0)
@@ -203,6 +204,13 @@ module ParseAPI
 		# diagnostics within the same metered lookup. No automatic retries by default.
 		def hlr(number, country: nil, deep: false)
 			get("/hlr/#{seg(number)}", country: country, deep: deep)
+		end
+
+		# Identify website technologies and versions by category.
+		# All categories are lists. Scope, pages and partial describe bounded coverage.
+		# Lists are nil when no page could be checked and empty for no matches.
+		def stack(domain, deep: false, pretty: false)
+			get("/stack/#{seg(domain)}", deep: deep, pretty: pretty)
 		end
 
 		# Check whether a domain is registered. Deep adds registration dates, registrar, status and DNSSEC on paid plans.
@@ -390,7 +398,8 @@ module ParseAPI
 		def execute(uri, headers)
 			return @transport.call(uri.to_s, headers) if @transport
 
-			http = connection
+			timeout = !@timeout_explicit && uri.path.start_with?('/stack/') ? 35 : @timeout
+			http = connection(timeout)
 			request = Net::HTTP::Get.new(uri.request_uri)
 			headers.each { |name, value| request[name] = value }
 			response = http.request(request)
@@ -399,17 +408,17 @@ module ParseAPI
 			[response.code.to_i, header_hash, response.body || '']
 		end
 
-		def connection
+		def connection(timeout = @timeout)
 			if @http.nil?
 				@http = Net::HTTP.new(@base_url.host, @base_url.port)
 				@http.use_ssl = @base_url.scheme == 'https'
-				@http.open_timeout = @timeout
-				@http.read_timeout = @timeout
-				@http.write_timeout = @timeout
 				# The client owns retries, including retries: 0.
 				@http.max_retries = 0
 				@http.keep_alive_timeout = 30
 			end
+			@http.open_timeout = timeout
+			@http.read_timeout = timeout
+			@http.write_timeout = timeout
 			@http.start unless @http.started?
 			@http
 		end

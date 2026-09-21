@@ -36,6 +36,45 @@ class TestUrlMapping < Minitest::Test
 		StubClient.new('test_key_123', retries: 0, **kwargs)
 	end
 
+	def test_stack_deadline_defaults_and_explicit_settings
+		response = Struct.new(:code, :body).new('200', '{"domain":"xn--bcher-kva.example","url":"https://xn--bcher-kva.example/","checked_at":null,"scope":"site","pages":0,"partial":null,"cms":null,"servers":null,"frameworks":null,"ecommerce":null,"analytics":null,"chat":null,"payments":null,"hosting":null,"deep":{},"future":true}')
+		def response.each_header; yield 'content-type', 'application/json'; end
+		[nil, 10, 1.2, 45].each do |configured|
+			http = Net::HTTP.new('example.com', 443)
+			captured = []
+			http.define_singleton_method(:start) { self }
+			http.define_singleton_method(:started?) { true }
+			http.define_singleton_method(:request) do |_request|
+				captured << [open_timeout, read_timeout, write_timeout]
+				response
+			end
+			original_new = Net::HTTP.method(:new)
+			Net::HTTP.define_singleton_method(:new) { |*_args| http }
+			begin
+				client = ParseAPI::Client.new('fixture', timeout: configured)
+				assert_nil client.stack('example.com')['frameworks']
+				client.domain('example.com')
+				assert_equal({}, client.stack('example.com', deep: true)['deep'])
+				assert_equal [configured || 35, configured || 10, configured || 35], captured.map(&:first)
+				assert captured.all? { |timeouts| timeouts.uniq.length == 1 }
+			ensure
+				Net::HTTP.define_singleton_method(:new, original_new)
+			end
+		end
+	end
+
+	def test_stack_preserves_null_empty_and_core_versions
+		records = JSON.parse('[{"domain":"xn--bcher-kva.example","url":"https://xn--bcher-kva.example/","checked_at":null,"scope":"homepage","pages":0,"partial":null,"cms":null,"servers":null,"frameworks":null,"ecommerce":null,"analytics":null,"chat":null,"payments":null,"hosting":null,"future":true},{"domain":"xn--bcher-kva.example","url":"https://xn--bcher-kva.example/","checked_at":"2026-09-21T12:00:00Z","scope":"homepage","pages":1,"partial":true,"cms":[],"servers":[],"frameworks":[],"ecommerce":[],"analytics":[],"chat":[],"payments":[],"hosting":[],"deep":{},"future":true},{"domain":"xn--bcher-kva.example","url":"https://xn--bcher-kva.example/","checked_at":"2026-09-21T12:00:00Z","scope":"homepage","pages":1,"partial":true,"cms":[{"technology":"wordpress","name":"WordPress","version":"6.8.2"}],"servers":[{"technology":"nginx","name":"nginx","version":null}],"frameworks":[{"technology":"react","name":"React","version":null}],"ecommerce":[],"analytics":[],"chat":[],"payments":[],"hosting":[],"future":true},{"domain":"xn--bcher-kva.example","url":"https://xn--bcher-kva.example/","checked_at":"2026-09-21T12:00:00Z","scope":"site","pages":6,"partial":false,"cms":[{"technology":"wordpress","name":"WordPress","version":"6.8.2"},{"technology":"ghost","name":"Ghost","version":null}],"servers":[{"technology":"nginx","name":"nginx","version":null},{"technology":"apache","name":"Apache","version":null}],"frameworks":[{"technology":"nextjs","name":"Next.js","version":"15.0.0","future":true},{"technology":"react","name":"React","version":null}],"ecommerce":[{"technology":"woocommerce","name":"WooCommerce","version":null}],"analytics":[{"technology":"google-analytics","name":"Google Analytics","version":null}],"chat":[{"technology":"intercom","name":"Intercom","version":null}],"payments":[{"technology":"stripe","name":"Stripe","version":null}],"hosting":[{"technology":"vercel","name":"Vercel","version":null}],"future":true},{"domain":"xn--bcher-kva.example","url":"https://xn--bcher-kva.example/","checked_at":"2026-09-21T12:00:00Z","scope":"site","pages":3,"partial":true,"cms":[],"servers":[],"frameworks":[{"technology":"nextjs","name":"Next.js","version":null,"future":true}],"ecommerce":[],"analytics":[],"chat":[],"payments":[],"hosting":[],"deep":{},"future":true},{"domain":"xn--bcher-kva.example","url":"https://xn--bcher-kva.example/","checked_at":null,"scope":"site","pages":0,"partial":null,"cms":null,"servers":null,"frameworks":null,"ecommerce":null,"analytics":null,"chat":null,"payments":null,"hosting":null,"deep":{},"future":true}]')
+		records.each do |body|
+			client = stub_client(responses: [[200, {}, JSON.generate(body)], [200, {}, JSON.generate(body)]])
+			assert_equal body, client.stack('bücher.example', deep: true, pretty: true)
+			assert_equal body, client.stack('example.com')
+			assert_equal 'https://api.parseapi.com/stack/b%C3%BCcher.example?deep=true&pretty=true', client.calls[0][:url]
+			assert_equal 'https://api.parseapi.com/stack/example.com', client.calls[1][:url]
+			assert_equal '2.0.0', client.calls[0][:headers]['Parse-Version']
+		end
+	end
+
 	def test_email_enrichment_preserves_false_null_and_future_codes
 		[{}, { 'deep' => {} }, { 'deep' => { 'first_name' => nil, 'no_reply' => nil, 'tag' => nil, 'mail_provider' => nil, 'status' => nil, 'reason' => nil } }, { 'deep' => { 'first_name' => 'Jane', 'no_reply' => false, 'tag' => 'news', 'mail_provider' => 'future-provider', 'deliverable' => true, 'catchall' => false, 'status' => 'future-status', 'reason' => 'future_reason' }, 'future' => true }].each do |extra|
 			body = { 'email' => 'jane.doe+news@example.com' }.merge(extra)
