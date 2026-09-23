@@ -27,6 +27,16 @@ class StubClient < ParseAPI::Client
 end
 
 class TestUrlMapping < Minitest::Test
+	def test_postal_choices_preserve_observation_without_inferring_city
+		choice = { 'city' => 'SYDNEY', 'state' => 'NSW', 'state_name' => 'New South Wales', 'future' => true }
+		other = { 'city' => 'HAYMARKET', 'state' => 'NSW', 'state_name' => 'New South Wales' }
+		[{}, { 'localities' => nil }, { 'localities' => [] }, { 'localities' => [choice] }, { 'localities' => [choice, other] }].each do |extra|
+			body = { 'postal' => '2000', 'country' => 'AU', 'city' => nil }.merge(extra)
+			client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+			assert_equal body, client.postal('2000', country: 'AU')
+		end
+	end
+
 	def test_public_api_matches_the_reviewed_manifest
 		expected = JSON.parse(File.read(File.join(__dir__, 'public_api.json')))
 		assert_equal expected, PublicAPISnapshot.capture
