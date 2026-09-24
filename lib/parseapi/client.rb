@@ -170,8 +170,8 @@ module ParseAPI
 			get("/vat/#{seg(number)}", country: country, deep: deep, from: from)
 		end
 
-		def iban(iban, country: nil, deep: false)
-			get("/iban/#{seg(iban)}", country: country, deep: deep)
+		def bank(iban, country: nil, deep: false)
+			get("/bank", {}, {}, { iban: iban, country: country, deep: deep }.reject { |_key, value| value.nil? })
 		end
 
 		# Look up a 6-11 digit card prefix, preserving leading zeros.
@@ -180,6 +180,16 @@ module ParseAPI
 			get("/card/#{seg(bin)}")
 		end
 
+
+		# US routing/account syntax only; not account or ACH eligibility verification.
+		def bank_us_ach(routing:, account:)
+			get('/bank', {}, {}, { format: 'us_ach', country: 'US', routing: routing, account: account })
+		end
+
+		# Describe accepted fields and check scope, not directory completeness.
+		def bank_requirements(country, format: nil)
+			get('/bank/requirements', country: country, format: format)
+		end
 
 		def npi(npi, deep: false, lang: nil)
 			get("/npi/#{seg(npi)}", deep: deep, lang: lang)
@@ -361,17 +371,22 @@ module ParseAPI
 			URI.encode_www_form_component(value.to_s).gsub('+', '%20')
 		end
 
-		def get(path, params = {}, headers = {})
+		def get(path, params = {}, headers = {}, json = nil)
 			retries = retries_for(path, params)
 			query = params.reject { |_name, value| value.nil? || value == false }
 			uri = @base_url.dup
 			uri.path = path
 			uri.query = URI.encode_www_form(query) unless query.empty?
 
+			encoded = json.nil? ? nil : JSON.generate(json)
 			attempt = 0
 			loop do
 				begin
-					status, response_headers, body = execute(uri, request_headers(headers))
+					status, response_headers, body = if encoded.nil?
+						execute(uri, request_headers(headers))
+					else
+						execute(uri, request_headers(headers.merge('Content-Type' => 'application/json')), 'POST', encoded)
+					end
 				rescue *NETWORK_ERRORS
 					raise if attempt >= retries
 
@@ -398,12 +413,13 @@ module ParseAPI
 		end
 
 		# Returns [status, headers_hash, body_string]. Overridden in tests.
-		def execute(uri, headers)
-			return @transport.call(uri.to_s, headers) if @transport
+		def execute(uri, headers, method = 'GET', body = nil)
+			return (method == 'GET' ? @transport.call(uri.to_s, headers) : @transport.call(uri.to_s, headers, method, body)) if @transport
 
 			timeout = !@timeout_explicit && uri.path.start_with?('/stack/') ? 35 : @timeout
 			http = connection(timeout)
-			request = Net::HTTP::Get.new(uri.request_uri)
+			request = (method == 'POST' ? Net::HTTP::Post : Net::HTTP::Get).new(uri.request_uri)
+			request.body = body unless body.nil?
 			headers.each { |name, value| request[name] = value }
 			response = http.request(request)
 			header_hash = {}

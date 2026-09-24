@@ -60,8 +60,8 @@ expect('company', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.comp
 expect('email', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.email('hello@gmail.com') }
 expect('vat', ->(r) { r['valid'] == true && r['country'] == 'DE' ? nil : 'not valid DE' }) { parse.vat('DE136695976') }
 expect('card', ->(r) { r['bin'] == '000000' ? nil : 'BIN echo mismatch' }) { parse.card('00 0000') }
-expect('iban', ->(r) { r['valid'] == true && r['country'] == 'DE' && r['bank'] == '37040044' ? nil : 'not valid DE' }) { parse.iban('DE89370400440532013000') }
-expect('iban junk', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.iban('hello') }
+expect('bank', ->(r) { r['valid'] == true && r['country'] == 'DE' && r['bank'] == '37040044' ? nil : 'not valid DE' }) { parse.bank('DE89370400440532013000') }
+expect('bank junk', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.bank('hello') }
 expect('npi', ->(r) { r['valid'] == true && r['registered'] == true ? nil : 'not registered' }) { parse.npi('1881018208') }
 expect('npi junk', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.npi('hello') }
 expect('phone', ->(r) { r['phone'] == '+14155552671' ? nil : 'wrong phone' }) { parse.phone('+14155552671') }

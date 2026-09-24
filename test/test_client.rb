@@ -15,8 +15,8 @@ class StubClient < ParseAPI::Client
 
 	private
 
-	def execute(uri, headers)
-		@calls << { url: uri.to_s, headers: headers }
+	def execute(uri, headers, method = 'GET', body = nil)
+		@calls << { url: uri.to_s, headers: headers, method: method, body: body }
 		return [200, {}, '{}'] if @responses.nil?
 		raise 'stub exhausted' if @responses.empty?
 
@@ -27,6 +27,41 @@ class StubClient < ParseAPI::Client
 end
 
 class TestUrlMapping < Minitest::Test
+	def test_bank_checks_and_raw_input_pass_through_unchanged
+		fixture = JSON.parse(File.read(File.join(__dir__, 'bank-fixtures.json')))
+		fixture['records'].each do |body|
+			fixture['inputs'].each do |raw|
+				client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+				assert_equal body, client.bank(raw, deep: true)
+				assert_equal 'https://api.parseapi.com/bank', client.calls.last[:url]
+				assert_equal 'POST', client.calls.last[:method]
+				assert_equal({ 'iban' => raw, 'deep' => true }, JSON.parse(client.calls.last[:body]))
+				assert_equal 'application/json', client.calls.last[:headers]['Content-Type']
+			end
+		end
+	end
+
+	def test_bank_domestic_requirements_and_post_retry
+		calls = []
+		payload = { 'bank_name' => nil, 'checks' => { 'account_checksum' => 'not_supported', 'future' => 'future-state' }, 'future' => true }
+		transport = lambda do |url, headers, method = 'GET', body = nil|
+			calls << { url: url, headers: headers, method: method, body: body }
+			calls.length == 1 ? [503, { 'retry-after' => '0' }, '{}'] : [200, {}, JSON.generate(payload)]
+		end
+		client = ParseAPI::Client.new('test', retries: 1, transport: transport)
+		raw = { routing: "\t011-000-015", account: " 00aB-%20\uFEFF" }
+		assert_equal payload, client.bank_us_ach(**raw)
+		assert_equal 2, calls.length
+		assert_equal calls[0][:body], calls[1][:body]
+		assert_equal 'https://api.parseapi.com/bank', calls[0][:url]
+		assert_equal 'POST', calls[0][:method]
+		assert_equal({ 'format' => 'us_ach', 'country' => 'US', 'routing' => raw[:routing], 'account' => raw[:account] }, JSON.parse(calls[0][:body]))
+		assert_equal payload, client.bank_requirements('US', format: 'future-format')
+		assert_equal 'https://api.parseapi.com/bank/requirements?country=US&format=future-format', calls.last[:url]
+		assert_equal 'GET', calls.last[:method]
+		assert_nil calls.last[:body]
+	end
+
 	def test_postal_choices_preserve_observation_without_inferring_city
 		choice = { 'city' => 'SYDNEY', 'state' => 'NSW', 'state_name' => 'New South Wales', 'future' => true }
 		other = { 'city' => 'HAYMARKET', 'state' => 'NSW', 'state_name' => 'New South Wales' }
@@ -165,8 +200,8 @@ class TestUrlMapping < Minitest::Test
 		'company' => [->(p) { p.company('732829320', country: 'FR', deep: true) }, 'https://api.parseapi.com/company/732829320?country=FR&deep=true'],
 		'email' => [->(p) { p.email('a@b.com') }, 'https://api.parseapi.com/email/a%40b.com'],
 		'vat' => [->(p) { p.vat('DE136695976') }, 'https://api.parseapi.com/vat/DE136695976'],
-		'iban' => [->(p) { p.iban('DE89370400440532013000') }, 'https://api.parseapi.com/iban/DE89370400440532013000'],
-		'iban country' => [->(p) { p.iban('89370400440532013000', country: 'DE') }, 'https://api.parseapi.com/iban/89370400440532013000?country=DE'],
+		'bank' => [->(p) { p.bank('DE89370400440532013000') }, 'https://api.parseapi.com/bank'],
+		'bank country' => [->(p) { p.bank('89370400440532013000', country: 'DE') }, 'https://api.parseapi.com/bank'],
 		'npi' => [->(p) { p.npi('1881018208') }, 'https://api.parseapi.com/npi/1881018208'],
 		'npi deep' => [->(p) { p.npi('1881018208', deep: true) }, 'https://api.parseapi.com/npi/1881018208?deep=true'],
 		'vat from deep' => [->(p) { p.vat('DE136695976', from: 'IE6388047V', deep: true) }, 'https://api.parseapi.com/vat/DE136695976?deep=true&from=IE6388047V'],
@@ -443,7 +478,7 @@ end
 
 
 class TestADP < Minitest::Test
- CASES = JSON.parse('[["country", ["US"], {}], ["state", ["NC"], {"country": "US"}], ["state.districts", ["NC"], {"country": "US"}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["Charlotte"], {"country": "US", "state": "NC"}], ["city.id", ["city_test"], {}], ["city.search", ["Charlotte"], {"country": "US", "state": "NC", "limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["Charlotte"], {"radius": 0, "unit": "km", "country": "US", "state": "NC", "limit": 2}], ["postal", ["28202"], {"country": "US"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0, "unit": "km"}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["iban", ["DE89370400440532013000"], {"country": "DE"}], ["carrier", ["+14155552671"], {"country": "US"}], ["hlr", ["+447712345678"], {"country": "GB"}], ["naics", ["31-33"], {}], ["naics.search", ["coffee"], {"limit": 2}], ["currency", ["USD"], {}], ["language", ["ar"], {}], ["name", ["Andrea"], {"country": "IT"}], ["time", [], {"at": "2026-09-08", "to": "UTC"}], ["time.at", [0, 0], {"at": "2026-09-08", "to": "UTC"}], ["timezone", ["UTC"], {"at": "2026-09-08", "to": "UTC"}], ["timezone.at", [0, 0], {"at": "2026-09-08"}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-09-08"}], ["date.today", [], {"to": "2026-09-08"}], ["emoji", ["fire"], {}], ["emoji.search", ["fire"], {"limit": 2}]]')
+ CASES = JSON.parse('[["country", ["US"], {}], ["state", ["NC"], {"country": "US"}], ["state.districts", ["NC"], {"country": "US"}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["Charlotte"], {"country": "US", "state": "NC"}], ["city.id", ["city_test"], {}], ["city.search", ["Charlotte"], {"country": "US", "state": "NC", "limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["Charlotte"], {"radius": 0, "unit": "km", "country": "US", "state": "NC", "limit": 2}], ["postal", ["28202"], {"country": "US"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0, "unit": "km"}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["bank", ["DE89370400440532013000"], {"country": "DE"}], ["carrier", ["+14155552671"], {"country": "US"}], ["hlr", ["+447712345678"], {"country": "GB"}], ["naics", ["31-33"], {}], ["naics.search", ["coffee"], {"limit": 2}], ["currency", ["USD"], {}], ["language", ["ar"], {}], ["name", ["Andrea"], {"country": "IT"}], ["time", [], {"at": "2026-09-08", "to": "UTC"}], ["time.at", [0, 0], {"at": "2026-09-08", "to": "UTC"}], ["timezone", ["UTC"], {"at": "2026-09-08", "to": "UTC"}], ["timezone.at", [0, 0], {"at": "2026-09-08"}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-09-08"}], ["date.today", [], {"to": "2026-09-08"}], ["emoji", ["fire"], {}], ["emoji.search", ["fire"], {"limit": 2}]]')
  CASES.each do |method, args, options|
   define_method("test_deep_#{method}") do
    data = { 'deep' => { 'zero' => 0, 'missing' => nil, 'empty' => [], 'future' => true } }
@@ -454,7 +489,11 @@ class TestADP < Minitest::Test
    assert_equal data, client.public_send(native, *args, **kwargs, deep: true)
    first, last = client.calls.map { |call| URI(call[:url]) }
    assert_equal first.path, last.path
-   assert_equal URI.decode_www_form(first.query || '').to_h.merge('deep' => 'true'), URI.decode_www_form(last.query || '').to_h
+   if method == 'bank'
+    assert_equal JSON.parse(client.calls[-2][:body]).merge('deep' => true), JSON.parse(client.calls[-1][:body])
+   else
+    assert_equal URI.decode_www_form(first.query || '').to_h.merge('deep' => 'true'), URI.decode_www_form(last.query || '').to_h
+   end
   end
  end
 end
