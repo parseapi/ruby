@@ -822,12 +822,28 @@
       [
         "key",
         "origin"
+      ],
+      [
+        "key",
+        "edition"
+      ],
+      [
+        "key",
+        "date"
       ]
     ],
     "tariff_search": [
       [
         "req",
         "query"
+      ],
+      [
+        "key",
+        "edition"
+      ],
+      [
+        "key",
+        "date"
       ]
     ],
     "time": [

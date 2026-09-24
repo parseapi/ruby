@@ -258,12 +258,12 @@ module ParseAPI
 		# schedule columns. Add origin with deep to resolve country-specific measures. Without origin,
 		# schedule detail remains available and origin-dependent fields are null. A null effective rate
 		# is not a zero rate.
-		def tariff(code, deep: false, origin: nil)
-			get("/tariff/#{seg(code)}", deep: deep, origin: origin)
+		def tariff(code, deep: false, origin: nil, edition: nil, date: nil)
+			tariff_selection(get("/tariff/#{seg(code)}", deep: deep, origin: origin, edition: edition, date: date), edition, date)
 		end
 
-		def tariff_search(query)
-			get('/tariff', q: query)
+		def tariff_search(query, edition: nil, date: nil)
+			tariff_selection(get('/tariff', q: query, edition: edition, date: date), edition, date)
 		end
 
 		def currency(code, deep: false, lang: nil)
@@ -380,6 +380,14 @@ module ParseAPI
 			end
 			targets.join(',')
 		end
+
+		def tariff_selection(result, edition, date)
+			if (!edition.nil? || !date.nil?) && (!result['edition'].is_a?(String) || !/\A[a-f0-9]{64}\z/.match?(result['edition']) || (!edition.nil? && result['edition'] != edition) || result['date'] != date)
+				raise Error.new(status: 0, code: 'tariff_selection_mismatch', message: 'Tariff response did not confirm the requested edition/date. The server may not support this selection.')
+			end
+			result
+		end
+
 
 		def seg(value)
 			URI.encode_www_form_component(value.to_s).gsub('+', '%20')
