@@ -224,9 +224,7 @@
         "lang"
       ]
     ],
-    "close": [
-
-    ],
+    "close": [],
     "company": [
       [
         "req",
@@ -521,9 +519,7 @@
         "transport"
       ]
     ],
-    "inspect": [
-
-    ],
+    "inspect": [],
     "ip": [
       [
         "req",
@@ -854,6 +850,46 @@
       [
         "key",
         "lang"
+      ],
+      [
+        "key",
+        "disambiguation"
+      ],
+      [
+        "key",
+        "targets"
+      ],
+      [
+        "key",
+        "ip"
+      ],
+      [
+        "key",
+        "city"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "state"
+      ],
+      [
+        "key",
+        "iata"
+      ],
+      [
+        "key",
+        "icao"
+      ],
+      [
+        "key",
+        "unlocode"
+      ],
+      [
+        "key",
+        "address"
       ]
     ],
     "time_at": [
@@ -880,6 +916,56 @@
       [
         "key",
         "lang"
+      ],
+      [
+        "key",
+        "disambiguation"
+      ],
+      [
+        "key",
+        "targets"
+      ]
+    ],
+    "time_zones": [
+      [
+        "opt",
+        "query"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "area"
+      ],
+      [
+        "key",
+        "offset"
+      ],
+      [
+        "key",
+        "abbreviation"
+      ],
+      [
+        "key",
+        "dst"
+      ],
+      [
+        "key",
+        "observes_dst"
+      ],
+      [
+        "key",
+        "at"
+      ],
+      [
+        "key",
+        "details"
+      ],
+      [
+        "key",
+        "sort"
       ]
     ],
     "timezone": [
@@ -984,12 +1070,8 @@
     ]
   },
   "ParseAPI::Error": {
-    "code": [
-
-    ],
-    "docs": [
-
-    ],
+    "code": [],
+    "docs": [],
     "initialize": [
       [
         "keyreq",
@@ -1012,11 +1094,7 @@
         "request_id"
       ]
     ],
-    "request_id": [
-
-    ],
-    "status": [
-
-    ]
+    "request_id": [],
+    "status": []
   }
 }

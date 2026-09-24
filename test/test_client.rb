@@ -27,6 +27,15 @@ class StubClient < ParseAPI::Client
 end
 
 class TestUrlMapping < Minitest::Test
+	def test_time_reserved_source_cannot_return_discovery
+		client = StubClient.new('fixture', responses: [])
+		['zones', 'help', ' ZONES ', 'Help'].each do |zone|
+			error = assert_raises(ArgumentError) { client.time(zone) }
+			assert_match(/IANA timezone ID/, error.message)
+		end
+		assert_empty client.calls
+	end
+
 	def test_postal_choices_preserve_observation_without_inferring_city
 		choice = { 'city' => 'SYDNEY', 'state' => 'NSW', 'state_name' => 'New South Wales', 'future' => true }
 		other = { 'city' => 'HAYMARKET', 'state' => 'NSW', 'state_name' => 'New South Wales' }
@@ -34,6 +43,21 @@ class TestUrlMapping < Minitest::Test
 			body = { 'postal' => '2000', 'country' => 'AU', 'city' => nil }.merge(extra)
 			client = stub_client(responses: [[200, {}, JSON.generate(body)]])
 			assert_equal body, client.postal('2000', country: 'AU')
+		end
+	end
+
+	def test_time_targets_validate_and_preserve_observation_states
+		client = stub_client
+		[[], [''], [' '], ['UTC,UTC'], ['UTC'] * 11, [nil], 'UTC'].each do |targets|
+			assert_raises(ArgumentError) { client.time('UTC', targets: targets) }
+			assert_raises(ArgumentError) { client.time_at(0, 0, targets: targets) }
+		end
+		assert_raises(ArgumentError) { client.time('UTC', to: 'UTC', targets: ['UTC']) }
+		assert_empty client.calls
+		[nil, [], [{ 'timezone' => 'UTC', 'unix' => 0 }, { 'timezone' => 'UTC', 'unix' => 0 }]].each do |targets|
+			body = { 'targets' => targets }
+			client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+			assert_equal body, client.time('UTC', targets: ['UTC', 'Asia/Tokyo', 'UTC'])
 		end
 	end
 
@@ -188,6 +212,18 @@ class TestUrlMapping < Minitest::Test
 		'currency_rate date amount' => [->(p) { p.currency_rate('USD', 'JPY', date: '2026-08-28', amount: 100) }, 'https://api.parseapi.com/currency/USD/JPY?date=2026-08-28&amount=100'],
 		'language' => [->(p) { p.language('en') }, 'https://api.parseapi.com/language/en'],
 		'name encodes spaces' => [->(p) { p.name('Smith, John') }, 'https://api.parseapi.com/name/Smith%2C%20John'],
+		'time compatible' => [->(p) { p.time('America/New_York', at: '2026-11-01T01:30:00', to: 'UTC', disambiguation: 'compatible') }, 'https://api.parseapi.com/time/America%2FNew_York?at=2026-11-01T01%3A30%3A00&to=UTC&disambiguation=compatible'],
+		'time coordinates compatible' => [->(p) { p.time_at(40.71, -74.01, at: '2026-11-01T01:30:00', to: 'UTC', disambiguation: 'compatible') }, 'https://api.parseapi.com/time?lat=40.71&lon=-74.01&at=2026-11-01T01%3A30%3A00&to=UTC&disambiguation=compatible'],
+		'time earlier' => [->(p) { p.time('America/New_York', at: '2026-11-01T01:30:00', to: 'UTC', disambiguation: 'earlier') }, 'https://api.parseapi.com/time/America%2FNew_York?at=2026-11-01T01%3A30%3A00&to=UTC&disambiguation=earlier'],
+		'time coordinates earlier' => [->(p) { p.time_at(40.71, -74.01, at: '2026-11-01T01:30:00', to: 'UTC', disambiguation: 'earlier') }, 'https://api.parseapi.com/time?lat=40.71&lon=-74.01&at=2026-11-01T01%3A30%3A00&to=UTC&disambiguation=earlier'],
+		'time later' => [->(p) { p.time('America/New_York', at: '2026-11-01T01:30:00', to: 'UTC', disambiguation: 'later') }, 'https://api.parseapi.com/time/America%2FNew_York?at=2026-11-01T01%3A30%3A00&to=UTC&disambiguation=later'],
+		'time coordinates later' => [->(p) { p.time_at(40.71, -74.01, at: '2026-11-01T01:30:00', to: 'UTC', disambiguation: 'later') }, 'https://api.parseapi.com/time?lat=40.71&lon=-74.01&at=2026-11-01T01%3A30%3A00&to=UTC&disambiguation=later'],
+		'time reject' => [->(p) { p.time('America/New_York', at: '2026-11-01T01:30:00', to: 'UTC', disambiguation: 'reject') }, 'https://api.parseapi.com/time/America%2FNew_York?at=2026-11-01T01%3A30%3A00&to=UTC&disambiguation=reject'],
+		'time coordinates reject' => [->(p) { p.time_at(40.71, -74.01, at: '2026-11-01T01:30:00', to: 'UTC', disambiguation: 'reject') }, 'https://api.parseapi.com/time?lat=40.71&lon=-74.01&at=2026-11-01T01%3A30%3A00&to=UTC&disambiguation=reject'],
+		'time zones all' => [->(p) { p.time_zones }, 'https://api.parseapi.com/time/zones'],
+		'time zones search' => [->(p) { p.time_zones('Europe') }, 'https://api.parseapi.com/time/zones?q=Europe'],
+		'time targets' => [->(p) { p.time('UTC', targets: ['UTC', 'Asia/Tokyo', 'UTC']) }, 'https://api.parseapi.com/time/UTC?targets=UTC%2CAsia%2FTokyo%2CUTC'],
+		'time coordinate targets' => [->(p) { p.time_at(0, 0, targets: ['UTC', 'Asia/Tokyo', 'UTC']) }, 'https://api.parseapi.com/time?lat=0&lon=0&targets=UTC%2CAsia%2FTokyo%2CUTC'],
 		'time UTC' => [->(p) { p.time }, 'https://api.parseapi.com/time'],
 		'time conversion' => [->(p) { p.time('America/New_York', at: '2026-09-05T15:00', to: 'Europe/London') }, 'https://api.parseapi.com/time/America%2FNew_York?at=2026-09-05T15%3A00&to=Europe%2FLondon'],
 		'time coordinates' => [->(p) { p.time_at(0, 0, at: '1970-01-01T00:00:00Z', to: 'UTC') }, 'https://api.parseapi.com/time?lat=0&lon=0&at=1970-01-01T00%3A00%3A00Z&to=UTC'],
