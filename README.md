@@ -54,7 +54,7 @@ parse.ip_self
 parse.email('hello@gmail.com')
 parse.vat('DE136695976')
 parse.iban('DE89370400440532013000')
-parse.bin('424242')
+parse.card('424242')
 parse.npi('1881018208')
 parse.phone('+14155552671')
 parse.carrier('+14155552671')
@@ -218,7 +218,7 @@ ip.dig('deep', 'datacenter') # true, false, or nil
 
 ## Errors
 
-Every non-2xx response raises `ParseAPI::Error` with `status`, `code`, `docs`, and `request_id`. Branch on `code`.
+Every non-2xx response raises `ParseAPI::Error` with `status`, `code`, `docs`, and `request_id`, plus nullable `retry_after` header metadata. Branch on `code`.
 
 ```ruby
 begin
@@ -243,6 +243,8 @@ Ordinary lookups retry network errors and HTTP 429, 500, 502, 503, and 504 up to
 
 Pass `retries: 0` to make every lookup a single attempt. An explicit count such as `retries: 2` applies to every lookup, including paid ones. A retried request can count toward usage even when the first response was lost. Omit `retries` or pass `nil` to use the defaults above.
 
+Automatic retries honor numeric and HTTP-date `Retry-After` values up to five seconds. A longer server wait returns the original API error immediately, with the raw header in `retry_after`, so the application can schedule a later attempt. Missing or invalid headers use ordinary backoff.
+
 Reuse one client for successive lookups. Call `parse.close` to release its connection when finished. A later lookup opens a new connection. Use a separate client in each concurrent thread.
 
 Network failures raise native Ruby exceptions. An invalid JSON response raises `JSON::ParserError`.
@@ -255,7 +257,28 @@ Requires Ruby 3.0 or later. Standard library only, zero dependencies.
 
 Full field reference for every endpoint: [parseapi.com/docs](https://parseapi.com/docs)
 
-BIN lookup accepts 6-11 digits as a string, including leading zeros. Spaces and hyphens are accepted. `prefix` is the actual longest match and can be shorter than the input. Unknown reference fields are null. `deep` adds an empty object on every plan.
+## Card
+
+Card looks up issuer, network and type from a BIN/IIN. It accepts 6-11 digits as a string, including leading zeros. Spaces and hyphens are accepted. `prefix` is the actual longest match and can be shorter than the input. Unknown reference fields are null. Invalid prefixes and full card numbers are rejected locally before a request is sent. Accepted input is sent unchanged.
+
+Compare `prefix` with the normalized response `bin`. A matched row can still have all metadata unknown. Keep unknown prepaid status separate from true and false.
+
+```ruby
+card = parse.card('4242 42-99')
+match = if card['prefix'].nil?
+  'No reference match'
+elsif card['prefix'] == card['bin']
+  'Exact prefix match'
+else
+  'Broader prefix match'
+end
+prepaid = case card['prepaid']
+when nil then 'Unknown prepaid status'
+when true then 'Prepaid'
+when false then 'Not prepaid'
+end
+puts "#{match}, #{prepaid}"
+```
 
 
 ## Optional detail

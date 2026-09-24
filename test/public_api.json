@@ -60,16 +60,6 @@
         "lang"
       ]
     ],
-    "bin": [
-      [
-        "req",
-        "bin"
-      ],
-      [
-        "key",
-        "deep"
-      ]
-    ],
     "bloc": [
       [
         "req",
@@ -94,6 +84,12 @@
       [
         "key",
         "country"
+      ]
+    ],
+    "card": [
+      [
+        "req",
+        "bin"
       ]
     ],
     "carrier": [
@@ -1010,9 +1006,16 @@
       [
         "key",
         "request_id"
+      ],
+      [
+        "key",
+        "retry_after"
       ]
     ],
     "request_id": [
+
+    ],
+    "retry_after": [
 
     ],
     "status": [
