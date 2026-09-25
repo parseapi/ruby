@@ -6,14 +6,15 @@ require 'time'
 module ParseAPI
 	# Every non-2xx response from the API. Branch on +code+, never on the message.
 	class Error < StandardError
-		attr_reader :status, :code, :docs, :request_id
+		attr_reader :status, :code, :docs, :request_id, :retry_after
 
-		def initialize(status:, code:, message:, docs: nil, request_id: nil)
+		def initialize(status:, code:, message:, docs: nil, request_id: nil, retry_after: nil)
 			super(message)
 			@status = status
 			@code = code
 			@docs = docs
 			@request_id = request_id
+			@retry_after = retry_after
 		end
 	end
 
@@ -173,14 +174,37 @@ module ParseAPI
 			get("/iban/#{seg(iban)}", country: country, deep: deep)
 		end
 
-		# Look up a 6-11 digit card prefix, preserving leading zeros.
 		def bin(bin, deep: false)
 			get("/bin/#{seg(bin)}", deep: deep)
 		end
 
-
 		def npi(npi, deep: false, lang: nil)
 			get("/npi/#{seg(npi)}", deep: deep, lang: lang)
+		end
+
+		def bank(iban, country: nil, deep: false)
+			get("/bank", {}, {}, { iban: iban, country: country, deep: deep }.reject { |_key, value| value.nil? })
+		end
+
+		# Look up a 2-11 digit card prefix, preserving leading zeros.
+		def card(bin, deep: false)
+			raise ArgumentError, 'parseapi: Card requires a 2-11 digit prefix string.' unless bin.is_a?(String) && bin.length <= 64 && /\A[0-9]{2,11}\z/.match?(bin.delete(" \t\r\n-"))
+			get("/card/#{seg(bin)}", deep: deep)
+		end
+
+
+		# US routing/account syntax only; not account or ACH eligibility verification.
+		def bank_us_ach(routing:, account:)
+			get('/bank', {}, {}, { format: 'us_ach', country: 'US', routing: routing, account: account })
+		end
+
+		# Describe accepted fields and check scope, not directory completeness.
+		def bank_requirements(country, format: nil)
+			get('/bank/requirements', country: country, format: format)
+		end
+
+		def provider(npi, deep: false, lang: nil)
+			get("/provider/#{seg(npi)}", deep: deep, lang: lang)
 		end
 
 		# Parse a phone number and its formats. Pass country for national numbers when needed. Deep
@@ -240,18 +264,31 @@ module ParseAPI
 			get('/useragent', { deep: deep }, { 'User-Agent' => ua })
 		end
 
+		def vehicle(vin, deep: false)
+			get("/vehicle/#{seg(vin)}", deep: deep)
+		end
+
 		def vin(vin, deep: false)
 			get("/vin/#{seg(vin)}", deep: deep)
 		end
 
 		# US NAICS 2022 definition and hierarchy.
+		# Compatibility names for Industry.
 		def naics(code, deep: false)
-			get("/naics/#{seg(code)}", deep: deep)
+			industry(code, deep: deep)
+		end
+
+		def naics_search(query, limit: nil, deep: false)
+			industry_search(query, limit: limit, deep: deep)
+		end
+
+		def industry(code, deep: false)
+			get("/industry/#{seg(code)}", deep: deep)
 		end
 
 		# Keyword search. Limit defaults to 10 and accepts 1-50.
-		def naics_search(query, limit: nil, deep: false)
-			get('/naics', q: query, limit: limit, deep: deep)
+		def industry_search(query, limit: nil, deep: false)
+			get('/industry', q: query, limit: limit, deep: deep)
 		end
 
 		# Look up the general US duty schedule line. Paid deep adds units and the special and other
@@ -393,17 +430,22 @@ module ParseAPI
 			URI.encode_www_form_component(value.to_s).gsub('+', '%20')
 		end
 
-		def get(path, params = {}, headers = {})
+		def get(path, params = {}, headers = {}, json = nil)
 			retries = retries_for(path, params)
 			query = params.reject { |_name, value| value.nil? || value == false }
 			uri = @base_url.dup
 			uri.path = path
 			uri.query = URI.encode_www_form(query) unless query.empty?
 
+			encoded = json.nil? ? nil : JSON.generate(json)
 			attempt = 0
 			loop do
 				begin
-					status, response_headers, body = execute(uri, request_headers(headers))
+					status, response_headers, body = if encoded.nil?
+						execute(uri, request_headers(headers))
+					else
+						execute(uri, request_headers(headers.merge('Content-Type' => 'application/json')), 'POST', encoded)
+					end
 				rescue *NETWORK_ERRORS
 					raise if attempt >= retries
 
@@ -414,13 +456,14 @@ module ParseAPI
 
 				return JSON.parse(body) if (200..299).cover?(status)
 
-				if RETRY_STATUS.include?(status) && attempt < retries
-					sleep(retry_delay(attempt, response_headers['retry-after']))
+				retry_after = response_headers['retry-after']
+				if RETRY_STATUS.include?(status) && attempt < retries && (wait = retry_delay(attempt, retry_after))
+					sleep(wait)
 					attempt += 1
 					next
 				end
 
-				raise build_error(status, body)
+				raise build_error(status, body, retry_after)
 			end
 		end
 
@@ -429,12 +472,13 @@ module ParseAPI
 		end
 
 		# Returns [status, headers_hash, body_string]. Overridden in tests.
-		def execute(uri, headers)
-			return @transport.call(uri.to_s, headers) if @transport
+		def execute(uri, headers, method = 'GET', body = nil)
+			return (method == 'GET' ? @transport.call(uri.to_s, headers) : @transport.call(uri.to_s, headers, method, body)) if @transport
 
 			timeout = !@timeout_explicit && uri.path.start_with?('/stack/') ? 35 : @timeout
 			http = connection(timeout)
-			request = Net::HTTP::Get.new(uri.request_uri)
+			request = (method == 'POST' ? Net::HTTP::Post : Net::HTTP::Get).new(uri.request_uri)
+			request.body = body unless body.nil?
 			headers.each { |name, value| request[name] = value }
 			response = http.request(request)
 			header_hash = {}
@@ -459,15 +503,18 @@ module ParseAPI
 
 		def retry_delay(attempt, retry_after)
 			if retry_after
-				seconds = Float(retry_after, exception: false)
-				return [seconds, RETRY_AFTER_CAP].min if seconds && seconds.finite? && seconds >= 0
+				if /\A[0-9]+(?:\.[0-9]+)?\z/.match?(retry_after.strip)
+					seconds = Float(retry_after, exception: false)
+					return seconds && seconds.finite? && seconds <= RETRY_AFTER_CAP ? seconds : nil
+				end
 				begin
-					return [[Time.httpdate(retry_after) - Time.now, 0].max, RETRY_AFTER_CAP].min
+					seconds = [Time.httpdate(retry_after) - Time.now, 0].max
+					return seconds > RETRY_AFTER_CAP ? nil : seconds
 				rescue ArgumentError
 					# Fall back to jitter when the header is not a delay or HTTP date.
 				end
 			end
-			rand * 0.25 * (2**attempt)
+			rand * [0.25 * (2**[attempt, 5].min), RETRY_AFTER_CAP].min
 		end
 
 		def retries_for(path, params)
@@ -478,7 +525,7 @@ module ParseAPI
 			metered ? 0 : DEFAULT_RETRIES
 		end
 
-		def build_error(status, body)
+		def build_error(status, body, retry_after = nil)
 			parsed = begin
 				JSON.parse(body)
 			rescue JSON::ParserError
@@ -490,7 +537,8 @@ module ParseAPI
 				code: parsed['code'].is_a?(String) ? parsed['code'] : 'unknown_error',
 				message: parsed['message'].is_a?(String) ? parsed['message'] : "Request failed with status #{status}",
 				docs: parsed['docs'].is_a?(String) ? parsed['docs'] : nil,
-				request_id: parsed['request_id'].is_a?(String) ? parsed['request_id'] : nil
+				request_id: parsed['request_id'].is_a?(String) ? parsed['request_id'] : nil,
+				retry_after: retry_after
 			)
 		end
 	end

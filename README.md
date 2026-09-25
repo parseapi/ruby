@@ -53,9 +53,9 @@ parse.ip('8.8.8.8')
 parse.ip_self
 parse.email('hello@gmail.com')
 parse.vat('DE136695976')
-parse.iban('DE89370400440532013000')
-parse.bin('424242')
-parse.npi('1881018208')
+parse.bank('DE89370400440532013000')
+parse.card('424242')
+parse.provider('1881018208')
 parse.phone('+14155552671')
 parse.carrier('+14155552671')
 parse.caller('+14155552671')
@@ -107,16 +107,18 @@ parse.mx('example.com')
 parse.dns('example.com')
 parse.dns('_dmarc.example.com', type: 'TXT')
 parse.useragent(ua_string)
-parse.vin('1HGCM82633A004352')
-parse.naics('541511')
-parse.naics_search('coffee shop', limit: 5)
+parse.vehicle('1HGCM82633A004352')
+parse.industry('541511')
+parse.industry_search('coffee shop', limit: 5)
 parse.tariff('8471.30.01.00', origin: 'CN', deep: true)
 parse.tariff_search('sunglasses')
 parse.emoji('rocket')
 parse.emoji_search('fire')
 ```
 
-NAICS paid deep records include classification `deep.exclusions`, each with a description and linked codes. Generic exclusions can have no linked codes. Omitted or null exclusions in older responses remain unknown. Search results also include `match`: the matched `field` (`name`, `term` or `naics`) and `text`, plus `corrections` with `from` and `to` tokens for typo fallback. Corrections are empty for exact, plural and prefix matches. Direct code lookups omit `match`. Older responses may omit it.
+The existing NAICS lookup and search methods remain available as compatibility names for Industry.
+
+Industry paid deep records include classification `deep.exclusions`, each with a description and linked codes. Generic exclusions can have no linked codes. Omitted or null exclusions in older responses remain unknown. Search results also include `match`: the matched `field` (`name`, `term` or `naics`) and `text`, plus `corrections` with `from` and `to` tokens for typo fallback. Corrections are empty for exact, plural and prefix matches. Direct code lookups omit `match`. Older responses may omit it.
 
 Each lookup returns a plain hash with string keys. Related lookups are separate calls, such as `country_states('US')`. Reading the result makes no further requests. New response fields and `nil` values are preserved.
 
@@ -235,6 +237,32 @@ Address search uses context from the form: prefer postal, or city and state. An 
 
 HLR reports status at the last check. `live` means assigned and `connected` means reachable at that check. Cached results may be returned. Null means unconfirmed. Deep diagnostics stay within the same metered lookup.
 
+Bank returns core `checks` for input, country, length, structure, checksum and national rules, plus an `issues` list. States are `passed`, `failed`, `not_checked` or `not_supported`. Unsupported national checking is not a failure. `valid` covers the implemented format and checksum rules, not account existence, ownership or payment reachability. Directory names and BICs may be null independently. Older responses may omit `checks` and `issues`, and future states and issue codes remain strings. Pass the original input unchanged so the API can report invalid characters. Deep `account` remains the BBAN remainder.
+
+Bank inputs use `POST /bank` JSON bodies, keeping IBAN and account values out of request URLs. Pass original strings; the server owns normalization and validation. Avoid logging request bodies. IBAN deep can include `directory` with the immutable `edition`, resolved `country` and actual `match` grain (`bank`, `branch`, `prefix` or `none`); it is absent if no directory lookup ran. A match does not prove complete country coverage or payment reachability.
+
+Use country requirements to build supported input fields. US ACH has an explicit helper with no deep option. It checks the routing format/ABA checksum and account-field syntax; `account_checksum` is `not_supported`. It preserves account characters and leading zeros. A nullable bank name is routing-directory identity, not account existence, ownership or ACH eligibility. The examples below are synthetic test inputs, not payment instructions.
+
+```ruby
+parse.bank_requirements('US', format: 'us_ach')
+parse.bank_us_ach(routing: '011000015', account: '0001234567')
+```
+
+## Provider lookup
+
+```ruby
+provider = parse.provider('1881018208')
+profile = parse.provider('1881018208', deep: true)
+```
+
+Pass the original NPI as a string. `valid` checks its format and checksum; `registered` means a match in the stored NPPES snapshot. `active` reflects recorded NPI deactivation, not licensure. `excluded` is an NPI-only OIG LEIE match; `false` is not a complete exclusion clearance. These directory facts do not verify credentials, current practice contact or payment eligibility.
+
+Invalid input returns `valid: false` with unknown provider fields. A checksum-valid number missing from the snapshot returns `registered: false`; unavailable storage remains an API error. Preserve `null` as unknown.
+
+The default pooled lookup includes provider identity, specialty and practice contact where held. Paid `deep` adds `deactivated_at`, `medicare`, `opt_out` and `enrollments` from stored source files, with no separate check meter or live verification. `enrollments: null` means unavailable; `[]` means no enrollment rows are returned. The API omits unrequested `deep` and returns `{}` when requested on Free.
+
+Paid Deep also returns `taxonomies` in published order, with taxonomy code, specialty label, primary flag and provider-reported license number/state, plus `enumerated_at`, `updated_at` and `reactivated_at` record dates. Reported licenses are not verified licenses. Null lists mean unavailable; empty lists mean the edition contains no entries. Core `sources` is available on every plan: NPPES, LEIE, PECOS and opt-out each have nullable edition metadata (`edition`, `published_at`, `through`, `imported_at`). Provider record dates are separate from source publication and completed import dates. Older responses may omit these additions. Edition details remain null until a verified source is served.
+
 ## Deep
 
 Choose enrichment for the question you need answered.
@@ -245,10 +273,11 @@ Choose enrichment for the question you need answered.
 | Domain | Registration dates, registrar, status and DNSSEC, included with a paid plan. Use `dns` for DNS records and `mx` for mail routing. |
 | Email | A metered mailbox check with deliverability, catch-all, status, reason and address hints, using included email checks or enabled on-demand usage. |
 | VAT | A metered registry check where supported, using included VAT checks or enabled on-demand usage. |
-| Phone, Time, Date, Currency, Language, Emoji, IBAN, Point | Optional detail in the same pooled request on every plan. |
+| Phone, Time, Date, Currency, Language, Emoji, Bank, Point | Optional detail in the same pooled request on every plan. |
 | Country, State, District, City, Postal | The place profile on paid plans, including demographic and tax facts where held. |
-| Name, NAICS | Name evidence or the industry definition profile on paid plans. |
-| VIN, NPI, Tariff, Company | The complete product detail bag on paid plans. |
+| Name, Industry | Name evidence or the industry definition profile on paid plans. |
+| NPI | Deactivation date, Medicare enrollment, opt-out and enrollment rows from stored sources on paid plans. Exclusion evidence stays core. |
+| Vehicle, Tariff, Company | The complete product detail bag on paid plans. |
 | Weather | Specialist current measurements and the existing forecast, alert, air and history bag on paid plans. |
 | Carrier, HLR | Optional diagnostic detail within the same metered core unit, including Free allowance units. No second gate or additional check. |
 
@@ -267,7 +296,7 @@ ip.dig('deep', 'datacenter') # true, false, or nil
 
 ## Errors
 
-Every non-2xx response raises `ParseAPI::Error` with `status`, `code`, `docs`, and `request_id`. Branch on `code`.
+Every non-2xx response raises `ParseAPI::Error` with `status`, `code`, `docs`, and `request_id`, plus nullable `retry_after` header metadata. Branch on `code`.
 
 ```ruby
 begin
@@ -292,11 +321,13 @@ Ordinary lookups retry network errors and HTTP 429, 500, 502, 503, and 504 up to
 
 Pass `retries: 0` to make every lookup a single attempt. An explicit count such as `retries: 2` applies to every lookup, including paid ones. A retried request can count toward usage even when the first response was lost. Omit `retries` or pass `nil` to use the defaults above.
 
+Automatic retries honor numeric and HTTP-date `Retry-After` values up to five seconds. A longer server wait returns the original API error immediately, with the raw header in `retry_after`, so the application can schedule a later attempt. Missing or invalid headers use ordinary backoff.
+
 Reuse one client for successive lookups. Call `parse.close` to release its connection when finished. A later lookup opens a new connection. Use a separate client in each concurrent thread.
 
 Network failures raise native Ruby exceptions. An invalid JSON response raises `JSON::ParserError`.
 
-For testing or instrumentation, pass a callable as `transport:`. It receives the URL and request-header hash and returns `[status, lowercase_response_headers, body]`. Custom transports should use the supplied headers and keep redirect following disabled.
+For testing or instrumentation, pass a callable as `transport:`. For GET it receives the URL and request-header hash. For Bank POST it also receives a third `"POST"` argument and fourth serialized JSON body argument. Accept optional method/body parameters when supplying a custom transport. It returns `[status, lowercase_response_headers, body]`. Custom transports should use the supplied headers and keep redirect following disabled.
 
 Requires Ruby 3.0 or later. Standard library only, zero dependencies.
 
@@ -304,12 +335,34 @@ Requires Ruby 3.0 or later. Standard library only, zero dependencies.
 
 Full field reference for every endpoint: [parseapi.com/docs](https://parseapi.com/docs)
 
-BIN lookup accepts 6-11 digits as a string, including leading zeros. Spaces and hyphens are accepted. `prefix` is the actual longest match and can be shorter than the input. Unknown reference fields are null. `deep` adds an empty object on every plan.
+## Card
 
+Send 2–11 leading digits as a string. Core returns `bin`, `brand`, `brand_name`
+and a CDN SVG `logo`. Brand detection uses reviewed network rules independently
+of issuer records. Unknown or ambiguous prefixes return null brand fields and a
+generic logo; a known network without reviewed artwork also uses the generic logo.
+
+Optional Deep adds `prefix`, `issuer`, `country`, `type` and `prepaid`, included
+in the same pooled request on every plan. Six or more digits enable directory
+matching. Fewer digits return all-null Deep fields. Compare `deep.prefix` with
+`bin`: equal is an exact recorded match; shorter is broader; null is no match.
+The longest row wins, including null fields. `prepaid: null` means unknown, not
+false. This is partial reference data, not card validity or payment acceptance.
+
+```ruby
+card = parse.card("51")
+puts card["logo"]
+details = parse.card("43737400", deep: true)
+issuer = details["deep"]["issuer"]
+```
+
+Leading zeros are preserved. Only ASCII spaces, tabs, CR, LF and hyphens are
+removed; raw input is limited to 64 characters. Invalid prefixes are rejected
+before dispatch, accepted input is forwarded unchanged. Never send a full card number.
 
 ## Optional detail
 
-The default response answers the common task. Ask for `deep` when you need more detail about that same result. Core fields stay equal. City, NAICS and Emoji searches put detail inside each result. Postal nearby and distance put metropolitan detail beside the entity it describes. Time conversion keeps target detail in `to.deep`; only the source has `deep.next_dst`.
+The default response answers the common task. Ask for `deep` when you need more detail about that same result. Core fields stay equal. City, Industry and Emoji searches put detail inside each result. Postal nearby and distance put metropolitan detail beside the entity it describes. Time conversion keeps target detail in `to.deep`; only the source has `deep.next_dst`.
 
 ```ruby
 basic = parse.time('America/New_York')
@@ -330,3 +383,5 @@ Pass a public hostname without a scheme, path, port or IP address. Stack returns
 Successful checks may be reused for up to 24 hours. `pretty` optionally formats the wire JSON. Stack uses your plan's request allowance and API version 2.0.0 selected by this client.
 
 Stack defaults to a 35-second transport timeout so a first scan has time to finish. Other lookups retain their 10-second default. An explicit client timeout takes precedence.
+
+Vehicle lookups use `vin` as the input and response field. Existing VIN methods remain available for compatibility.

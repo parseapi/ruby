@@ -60,6 +60,40 @@
         "lang"
       ]
     ],
+    "bank": [
+      [
+        "req",
+        "iban"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "bank_requirements": [
+      [
+        "req",
+        "country"
+      ],
+      [
+        "key",
+        "format"
+      ]
+    ],
+    "bank_us_ach": [
+      [
+        "keyreq",
+        "routing"
+      ],
+      [
+        "keyreq",
+        "account"
+      ]
+    ],
     "bin": [
       [
         "req",
@@ -94,6 +128,16 @@
       [
         "key",
         "country"
+      ]
+    ],
+    "card": [
+      [
+        "req",
+        "bin"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "carrier": [
@@ -224,7 +268,9 @@
         "lang"
       ]
     ],
-    "close": [],
+    "close": [
+
+    ],
     "company": [
       [
         "req",
@@ -497,6 +543,30 @@
         "deep"
       ]
     ],
+    "industry": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "industry_search": [
+      [
+        "req",
+        "query"
+      ],
+      [
+        "key",
+        "limit"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
     "initialize": [
       [
         "opt",
@@ -519,7 +589,9 @@
         "transport"
       ]
     ],
-    "inspect": [],
+    "inspect": [
+
+    ],
     "ip": [
       [
         "req",
@@ -750,6 +822,20 @@
       [
         "key",
         "unit"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ]
+    ],
+    "provider": [
+      [
+        "req",
+        "npi"
       ],
       [
         "key",
@@ -1056,6 +1142,16 @@
         "from"
       ]
     ],
+    "vehicle": [
+      [
+        "req",
+        "vin"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
     "vin": [
       [
         "req",
@@ -1086,8 +1182,12 @@
     ]
   },
   "ParseAPI::Error": {
-    "code": [],
-    "docs": [],
+    "code": [
+
+    ],
+    "docs": [
+
+    ],
     "initialize": [
       [
         "keyreq",
@@ -1108,9 +1208,20 @@
       [
         "key",
         "request_id"
+      ],
+      [
+        "key",
+        "retry_after"
       ]
     ],
-    "request_id": [],
-    "status": []
+    "request_id": [
+
+    ],
+    "retry_after": [
+
+    ],
+    "status": [
+
+    ]
   }
 }

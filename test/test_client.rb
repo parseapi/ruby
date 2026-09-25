@@ -15,8 +15,8 @@ class StubClient < ParseAPI::Client
 
 	private
 
-	def execute(uri, headers)
-		@calls << { url: uri.to_s, headers: headers }
+	def execute(uri, headers, method = 'GET', body = nil)
+		@calls << { url: uri.to_s, headers: headers, method: method, body: body }
 		return [200, {}, '{}'] if @responses.nil?
 		raise 'stub exhausted' if @responses.empty?
 
@@ -58,6 +58,51 @@ class TestUrlMapping < Minitest::Test
 			body = { 'targets' => targets }
 			client = stub_client(responses: [[200, {}, JSON.generate(body)]])
 			assert_equal body, client.time('UTC', targets: ['UTC', 'Asia/Tokyo', 'UTC'])
+		end
+	end
+
+	def test_bank_checks_and_raw_input_pass_through_unchanged
+		fixture = JSON.parse(File.read(File.join(__dir__, 'bank-fixtures.json')))
+		fixture['records'].each do |body|
+			fixture['inputs'].each do |raw|
+				client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+				assert_equal body, client.bank(raw, deep: true)
+				assert_equal 'https://api.parseapi.com/bank', client.calls.last[:url]
+				assert_equal 'POST', client.calls.last[:method]
+				assert_equal({ 'iban' => raw, 'deep' => true }, JSON.parse(client.calls.last[:body]))
+				assert_equal 'application/json', client.calls.last[:headers]['Content-Type']
+			end
+		end
+	end
+
+	def test_bank_domestic_requirements_and_post_retry
+		calls = []
+		payload = { 'bank_name' => nil, 'checks' => { 'account_checksum' => 'not_supported', 'future' => 'future-state' }, 'future' => true }
+		transport = lambda do |url, headers, method = 'GET', body = nil|
+			calls << { url: url, headers: headers, method: method, body: body }
+			calls.length == 1 ? [503, { 'retry-after' => '0' }, '{}'] : [200, {}, JSON.generate(payload)]
+		end
+		client = ParseAPI::Client.new('test', retries: 1, transport: transport)
+		raw = { routing: "\t011-000-015", account: " 00aB-%20\uFEFF" }
+		assert_equal payload, client.bank_us_ach(**raw)
+		assert_equal 2, calls.length
+		assert_equal calls[0][:body], calls[1][:body]
+		assert_equal 'https://api.parseapi.com/bank', calls[0][:url]
+		assert_equal 'POST', calls[0][:method]
+		assert_equal({ 'format' => 'us_ach', 'country' => 'US', 'routing' => raw[:routing], 'account' => raw[:account] }, JSON.parse(calls[0][:body]))
+		assert_equal payload, client.bank_requirements('US', format: 'future-format')
+		assert_equal 'https://api.parseapi.com/bank/requirements?country=US&format=future-format', calls.last[:url]
+		assert_equal 'GET', calls.last[:method]
+		assert_nil calls.last[:body]
+	end
+
+	def test_postal_choices_preserve_observation_without_inferring_city
+		choice = { 'city' => 'SYDNEY', 'state' => 'NSW', 'state_name' => 'New South Wales', 'future' => true }
+		other = { 'city' => 'HAYMARKET', 'state' => 'NSW', 'state_name' => 'New South Wales' }
+		[{}, { 'localities' => nil }, { 'localities' => [] }, { 'localities' => [choice] }, { 'localities' => [choice, other] }].each do |extra|
+			body = { 'postal' => '2000', 'country' => 'AU', 'city' => nil }.merge(extra)
+			client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+			assert_equal body, client.postal('2000', country: 'AU')
 		end
 	end
 
@@ -125,10 +170,16 @@ class TestUrlMapping < Minitest::Test
 		end
 	end
 
-	def test_bin_preserves_null_false_and_prefix
+	def test_card_preserves_null_false_and_prefix
 		body = { 'bin' => '00123456', 'prefix' => '001234', 'country' => nil, 'issuer' => 'Fixture Bank', 'brand' => 'future-brand', 'type' => nil, 'prepaid' => false, 'deep' => {}, 'future' => true }
 		client = stub_client(responses: [[200, {}, JSON.generate(body)]])
-		assert_equal body, client.bin('00 1234-56', deep: true)
+		assert_equal body, client.card('00 1234-56')
+	end
+
+	def test_card_deep_preserves_null_false_and_prefix
+		body = { 'bin' => '00123456', 'brand' => nil, 'brand_name' => nil, 'logo' => 'https://cdn.parseapi.com/card/generic.svg', 'deep' => { 'prefix' => '001234', 'country' => nil, 'issuer' => nil, 'type' => nil, 'prepaid' => false }, 'future' => true }
+		client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+		assert_equal body, client.card('00 1234-56', deep: true)
 	end
 
 	def test_name_preserves_nullable_evidence_and_future_fields
@@ -149,14 +200,15 @@ class TestUrlMapping < Minitest::Test
 	end
 
 	TABLE = {
-		'bin' => [->(p) { p.bin('001234') }, 'https://api.parseapi.com/bin/001234'],
-		'bin deep' => [->(p) { p.bin('00 1234-56', deep: true) }, 'https://api.parseapi.com/bin/00%201234-56?deep=true'],
+		'card' => [->(p) { p.card('001234') }, 'https://api.parseapi.com/card/001234'],
+		'card deep' => [->(p) { p.card('51', deep: true) }, 'https://api.parseapi.com/card/51?deep=true'],
+		'card separators' => [->(p) { p.card('00 1234-56') }, 'https://api.parseapi.com/card/00%201234-56'],
 		'dns' => [->(p) { p.dns('example.com') }, 'https://api.parseapi.com/dns/example.com'],
 		'dns type' => [->(p) { p.dns('_dmarc.bücher.example.', type: 'txt') }, 'https://api.parseapi.com/dns/_dmarc.b%C3%BCcher.example.?type=txt'],
-		'naics' => [->(p) { p.naics('31-33') }, 'https://api.parseapi.com/naics/31-33'],
-		'naics encoded' => [->(p) { p.naics('54/11') }, 'https://api.parseapi.com/naics/54%2F11'],
-		'naics_search' => [->(p) { p.naics_search('coffee & tea', limit: 5) }, 'https://api.parseapi.com/naics?q=coffee+%26+tea&limit=5'],
-		'naics_search default' => [->(p) { p.naics_search('plumbing') }, 'https://api.parseapi.com/naics?q=plumbing'],
+		'naics' => [->(p) { p.industry('31-33') }, 'https://api.parseapi.com/industry/31-33'],
+		'naics encoded' => [->(p) { p.industry('54/11') }, 'https://api.parseapi.com/industry/54%2F11'],
+		'industry_search' => [->(p) { p.industry_search('coffee & tea', limit: 5) }, 'https://api.parseapi.com/industry?q=coffee+%26+tea&limit=5'],
+		'industry_search default' => [->(p) { p.industry_search('plumbing') }, 'https://api.parseapi.com/industry?q=plumbing'],
 		'name country' => [->(p) { p.name('Andrea / Smith', country: 'IT') }, 'https://api.parseapi.com/name/Andrea%20%2F%20Smith?country=IT'],
 		'measure' => [->(p) { p.measure('5 ft 11 in', to: 'cm', locale: 'en-US', system: 'us') }, 'https://api.parseapi.com/measure/5%20ft%2011%20in?to=cm&locale=en-US&system=us'],
 		'measure compound' => [->(p) { p.measure('1 kg/m^3', to: 'g/L') }, 'https://api.parseapi.com/measure/1%20kg%2Fm%5E3?to=g%2FL'],
@@ -189,10 +241,10 @@ class TestUrlMapping < Minitest::Test
 		'company' => [->(p) { p.company('732829320', country: 'FR', deep: true) }, 'https://api.parseapi.com/company/732829320?country=FR&deep=true'],
 		'email' => [->(p) { p.email('a@b.com') }, 'https://api.parseapi.com/email/a%40b.com'],
 		'vat' => [->(p) { p.vat('DE136695976') }, 'https://api.parseapi.com/vat/DE136695976'],
-		'iban' => [->(p) { p.iban('DE89370400440532013000') }, 'https://api.parseapi.com/iban/DE89370400440532013000'],
-		'iban country' => [->(p) { p.iban('89370400440532013000', country: 'DE') }, 'https://api.parseapi.com/iban/89370400440532013000?country=DE'],
-		'npi' => [->(p) { p.npi('1881018208') }, 'https://api.parseapi.com/npi/1881018208'],
-		'npi deep' => [->(p) { p.npi('1881018208', deep: true) }, 'https://api.parseapi.com/npi/1881018208?deep=true'],
+		'bank' => [->(p) { p.bank('DE89370400440532013000') }, 'https://api.parseapi.com/bank'],
+		'bank country' => [->(p) { p.bank('89370400440532013000', country: 'DE') }, 'https://api.parseapi.com/bank'],
+		'npi' => [->(p) { p.provider('1881018208') }, 'https://api.parseapi.com/provider/1881018208'],
+		'npi deep' => [->(p) { p.provider('1881018208', deep: true) }, 'https://api.parseapi.com/provider/1881018208?deep=true'],
 		'vat from deep' => [->(p) { p.vat('DE136695976', from: 'IE6388047V', deep: true) }, 'https://api.parseapi.com/vat/DE136695976?deep=true&from=IE6388047V'],
 		'phone encodes plus' => [->(p) { p.phone('+14155552671', deep: true) }, 'https://api.parseapi.com/phone/%2B14155552671?deep=true'],
 		'carrier encodes plus' => [->(p) { p.carrier('+14155552671') }, 'https://api.parseapi.com/carrier/%2B14155552671'],
@@ -203,6 +255,8 @@ class TestUrlMapping < Minitest::Test
 		'mac' => [->(p) { p.mac('00:1B:63:84:45:E6') }, 'https://api.parseapi.com/mac/00%3A1B%3A63%3A84%3A45%3AE6'],
 		'mx' => [->(p) { p.mx('example.com') }, 'https://api.parseapi.com/mx/example.com'],
 		'useragent' => [->(p) { p.useragent('TestUA/1.0') }, 'https://api.parseapi.com/useragent'],
+		'vehicle' => [->(p) { p.vehicle('1HGCM82633A004352') }, 'https://api.parseapi.com/vehicle/1HGCM82633A004352'],
+		'vehicle deep' => [->(p) { p.vehicle('1HGCM82633A004352', deep: true) }, 'https://api.parseapi.com/vehicle/1HGCM82633A004352?deep=true'],
 		'vin' => [->(p) { p.vin('1HGCM82633A004352') }, 'https://api.parseapi.com/vin/1HGCM82633A004352'],
 		'vin deep' => [->(p) { p.vin('1HGCM82633A004352', deep: true) }, 'https://api.parseapi.com/vin/1HGCM82633A004352?deep=true'],
 		'tariff' => [->(p) { p.tariff('8471.30.01.00', deep: true, origin: 'CN') }, 'https://api.parseapi.com/tariff/8471.30.01.00?deep=true&origin=CN'],
@@ -374,11 +428,11 @@ class TestUrlMapping < Minitest::Test
 		Net::HTTP.define_singleton_method(:new, original_new) if original_new
 	end
 
-	def test_retry_after_supports_http_dates_and_caps_delays
+	def test_retry_after_supports_http_dates_and_wait_budget
 		client = ParseAPI.new('k')
 		assert_equal 0, client.send(:retry_delay, 0, 'Sun, 06 Nov 1994 08:49:37 GMT')
-		assert_equal 5.0, client.send(:retry_delay, 0, (Time.now + 60).httpdate)
-		assert_equal 5.0, client.send(:retry_delay, 0, '100')
+		assert_nil client.send(:retry_delay, 0, (Time.now + 60).httpdate)
+		assert_nil client.send(:retry_delay, 0, '100')
 	end
 
 	def test_close_is_idempotent_and_releases_the_session
@@ -471,15 +525,15 @@ class TestNAICSEvidence < Minitest::Test
   records.each do |record|
    body = { 'q' => 'sofware', 'year' => 2022, 'country' => 'US', 'results' => [record] }
    client = StubClient.new('test_key', retries: 0, responses: [[200, {}, JSON.generate(body)]])
-   assert_equal body, client.naics_search('sofware')
-   assert_equal 'https://api.parseapi.com/naics?q=sofware', client.calls[0][:url]
+   assert_equal body, client.industry_search('sofware')
+   assert_equal 'https://api.parseapi.com/industry?q=sofware', client.calls[0][:url]
   end
  end
 end
 
 
 class TestADP < Minitest::Test
- CASES = JSON.parse('[["country", ["US"], {}], ["state", ["NC"], {"country": "US"}], ["state.districts", ["NC"], {"country": "US"}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["Charlotte"], {"country": "US", "state": "NC"}], ["city.id", ["city_test"], {}], ["city.search", ["Charlotte"], {"country": "US", "state": "NC", "limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["Charlotte"], {"radius": 0, "unit": "km", "country": "US", "state": "NC", "limit": 2}], ["postal", ["28202"], {"country": "US"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0, "unit": "km"}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["iban", ["DE89370400440532013000"], {"country": "DE"}], ["carrier", ["+14155552671"], {"country": "US"}], ["hlr", ["+447712345678"], {"country": "GB"}], ["naics", ["31-33"], {}], ["naics.search", ["coffee"], {"limit": 2}], ["currency", ["USD"], {}], ["language", ["ar"], {}], ["name", ["Andrea"], {"country": "IT"}], ["time", [], {"at": "2026-09-08", "to": "UTC"}], ["time.at", [0, 0], {"at": "2026-09-08", "to": "UTC"}], ["timezone", ["UTC"], {"at": "2026-09-08", "to": "UTC"}], ["timezone.at", [0, 0], {"at": "2026-09-08"}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-09-08"}], ["date.today", [], {"to": "2026-09-08"}], ["emoji", ["fire"], {}], ["emoji.search", ["fire"], {"limit": 2}]]')
+ CASES = JSON.parse('[["country", ["US"], {}], ["state", ["NC"], {"country": "US"}], ["state.districts", ["NC"], {"country": "US"}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["Charlotte"], {"country": "US", "state": "NC"}], ["city.id", ["city_test"], {}], ["city.search", ["Charlotte"], {"country": "US", "state": "NC", "limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["Charlotte"], {"radius": 0, "unit": "km", "country": "US", "state": "NC", "limit": 2}], ["postal", ["28202"], {"country": "US"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0, "unit": "km"}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["bank", ["DE89370400440532013000"], {"country": "DE"}], ["carrier", ["+14155552671"], {"country": "US"}], ["hlr", ["+447712345678"], {"country": "GB"}], ["naics", ["31-33"], {}], ["naics.search", ["coffee"], {"limit": 2}], ["currency", ["USD"], {}], ["language", ["ar"], {}], ["name", ["Andrea"], {"country": "IT"}], ["time", [], {"at": "2026-09-08", "to": "UTC"}], ["time.at", [0, 0], {"at": "2026-09-08", "to": "UTC"}], ["timezone", ["UTC"], {"at": "2026-09-08", "to": "UTC"}], ["timezone.at", [0, 0], {"at": "2026-09-08"}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-09-08"}], ["date.today", [], {"to": "2026-09-08"}], ["emoji", ["fire"], {}], ["emoji.search", ["fire"], {"limit": 2}]]')
  CASES.each do |method, args, options|
   define_method("test_deep_#{method}") do
    data = { 'deep' => { 'zero' => 0, 'missing' => nil, 'empty' => [], 'future' => true } }
@@ -490,7 +544,11 @@ class TestADP < Minitest::Test
    assert_equal data, client.public_send(native, *args, **kwargs, deep: true)
    first, last = client.calls.map { |call| URI(call[:url]) }
    assert_equal first.path, last.path
-   assert_equal URI.decode_www_form(first.query || '').to_h.merge('deep' => 'true'), URI.decode_www_form(last.query || '').to_h
+   if method == 'bank'
+    assert_equal JSON.parse(client.calls[-2][:body]).merge('deep' => true), JSON.parse(client.calls[-1][:body])
+   else
+    assert_equal URI.decode_www_form(first.query || '').to_h.merge('deep' => 'true'), URI.decode_www_form(last.query || '').to_h
+   end
   end
  end
 end
@@ -518,7 +576,7 @@ end
 
 
 class TestLanguageOptions < Minitest::Test
-  OPERATIONS = JSON.parse(%q@[["ip", ["8.8.8.8"], {"deep": true}], ["ip.self", [], {"deep": true}], ["continent", ["EU"], {}], ["continent.countries", ["EU"], {}], ["bloc.countries", ["EU"], {}], ["country", ["DE"], {"deep": true}], ["country.states", ["DE"], {}], ["state", ["CA"], {"country": "US"}], ["state.districts", ["CA"], {"country": "US", "deep": true}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["München"], {"country": "DE"}], ["city.id", ["city_fixture"], {"deep": true}], ["city.search", ["Mün"], {"limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["München"], {"radius": 0, "unit": "km"}], ["postal", ["SW1A 1AA"], {"country": "GB"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["company", ["732829320"], {"country": "FR", "deep": true}], ["npi", ["1881018208"], {"deep": true}], ["asn", ["AS13335"], {}], ["currency", ["USD"], {"deep": true}], ["language", ["ja"], {}], ["time", ["America/New_York"], {"at": "2026-01-01T12:00", "to": "UTC", "deep": true}], ["time.at", [0, 0], {"at": "2026-01-01T12:00Z"}], ["timezone", ["UTC"], {"deep": true}], ["timezone.at", [0, 0], {"deep": true}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-05-01", "deep": true}], ["date.today", [], {"to": "2026-05-01"}], ["point", [0, 0], {"deep": true}], ["emoji", ["😀"], {"deep": true}], ["emoji.search", ["visage"], {"limit": 2}], ["measure.units", [], {"query": "meter", "unit": "m"}]]@).freeze
+  OPERATIONS = JSON.parse(%q@[["ip", ["8.8.8.8"], {"deep": true}], ["ip.self", [], {"deep": true}], ["continent", ["EU"], {}], ["continent.countries", ["EU"], {}], ["bloc.countries", ["EU"], {}], ["country", ["DE"], {"deep": true}], ["country.states", ["DE"], {}], ["state", ["CA"], {"country": "US"}], ["state.districts", ["CA"], {"country": "US", "deep": true}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["München"], {"country": "DE"}], ["city.id", ["city_fixture"], {"deep": true}], ["city.search", ["Mün"], {"limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["München"], {"radius": 0, "unit": "km"}], ["postal", ["SW1A 1AA"], {"country": "GB"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["company", ["732829320"], {"country": "FR", "deep": true}], ["provider", ["1881018208"], {"deep": true}], ["asn", ["AS13335"], {}], ["currency", ["USD"], {"deep": true}], ["language", ["ja"], {}], ["time", ["America/New_York"], {"at": "2026-01-01T12:00", "to": "UTC", "deep": true}], ["time.at", [0, 0], {"at": "2026-01-01T12:00Z"}], ["timezone", ["UTC"], {"deep": true}], ["timezone.at", [0, 0], {"deep": true}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-05-01", "deep": true}], ["date.today", [], {"to": "2026-05-01"}], ["point", [0, 0], {"deep": true}], ["emoji", ["😀"], {"deep": true}], ["emoji.search", ["visage"], {"limit": 2}], ["measure.units", [], {"query": "meter", "unit": "m"}]]@).freeze
 
   def test_display_language_is_per_request_and_preserves_existing_queries
     OPERATIONS.each do |name, args, options|
@@ -572,4 +630,43 @@ class TestVersion < Minitest::Test
 	ensure
 		client&.close
 	end
+end
+
+class TestCardDX < Minitest::Test
+  def test_invalid_card_inputs_never_reach_transport
+    client = StubClient.new('k')
+    ['4111111111111111', '4111-1111-1111-1111', '1', '123456789012', '１２３４５６', "001\u00a0234", "001\u200b234", '00%20234', "001\v234", ' ' * 59 + '001234', nil, 123456].each do |input|
+      error = assert_raises(ArgumentError) { client.card(input) }
+      assert_equal 'parseapi: Card requires a 2-11 digit prefix string.', error.message
+    end
+    assert_empty client.calls
+    [" \t00-1234\r\n", ' ' * 58 + '001234', '12345678901'].each do |raw|
+      client.card(raw)
+      assert_equal raw, URI::DEFAULT_PARSER.unescape(URI(client.calls.last[:url]).path.delete_prefix('/card/'))
+    end
+  end
+
+  def test_retry_after_budget_and_raw_metadata
+    ['60', '9' * 400, (Time.now + 60).httpdate].each do |header|
+      client = StubClient.new('k', responses: [[429, { 'retry-after' => header }, '{"code":"rate_limited","message":"Later","request_id":"receipt"}']])
+      client.define_singleton_method(:sleep) { |_| flunk 'must not sleep' }
+      error = assert_raises(ParseAPI::Error) { client.country('US') }
+      header.nil? ? assert_nil(error.retry_after) : assert_equal(header, error.retry_after)
+      assert_equal 'rate_limited', error.code
+      assert_equal 'receipt', error.request_id
+      assert_equal 1, client.calls.length
+    end
+    ['0', '0.01', 'malformed', nil].each do |header|
+      client = StubClient.new('k', retries: 1, responses: [[503, { 'retry-after' => header }, '{}'], [503, { 'retry-after' => header }, '{}']])
+      sleeps = []
+      client.define_singleton_method(:sleep) { |delay| sleeps << delay }
+      error = assert_raises(ParseAPI::Error) { client.country('US') }
+      header.nil? ? assert_nil(error.retry_after) : assert_equal(header, error.retry_after)
+      assert_equal 2, client.calls.length
+      assert_equal 1, sleeps.length
+      assert_equal header.to_f, sleeps[0] if header == '0' || header == '0.01'
+      assert_operator sleeps[0], :<=, 5
+    end
+    assert_nil ParseAPI::Error.new(status: 400, code: 'test', message: 'test').retry_after
+  end
 end
