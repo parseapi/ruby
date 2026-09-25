@@ -634,7 +634,7 @@
         "name_locale"
       ]
     ],
-    "npi": [
+    "provider": [
       [
         "req",
         "npi"

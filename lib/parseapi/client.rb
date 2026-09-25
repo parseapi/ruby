@@ -191,8 +191,8 @@ module ParseAPI
 			get('/bank/requirements', country: country, format: format)
 		end
 
-		def npi(npi, deep: false, lang: nil)
-			get("/npi/#{seg(npi)}", deep: deep, lang: lang)
+		def provider(npi, deep: false, lang: nil)
+			get("/provider/#{seg(npi)}", deep: deep, lang: lang)
 		end
 
 		# Parse a phone number and its formats. Pass country for national numbers when needed. Deep
