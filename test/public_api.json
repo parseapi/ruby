@@ -960,6 +960,16 @@
         "from"
       ]
     ],
+    "vehicle": [
+      [
+        "req",
+        "vin"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
     "vin": [
       [
         "req",
