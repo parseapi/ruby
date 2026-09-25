@@ -60,6 +60,40 @@
         "lang"
       ]
     ],
+    "bank": [
+      [
+        "req",
+        "iban"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "bank_requirements": [
+      [
+        "req",
+        "country"
+      ],
+      [
+        "key",
+        "format"
+      ]
+    ],
+    "bank_us_ach": [
+      [
+        "keyreq",
+        "routing"
+      ],
+      [
+        "keyreq",
+        "account"
+      ]
+    ],
     "bloc": [
       [
         "req",
@@ -241,6 +275,79 @@
       [
         "key",
         "lang"
+      ]
+    ],
+    "company_coverage": [],
+    "company_id": [
+      [
+        "req",
+        "id"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "company_search": [
+      [
+        "key",
+        "query"
+      ],
+      [
+        "key",
+        "domain"
+      ],
+      [
+        "key",
+        "ticker"
+      ],
+      [
+        "key",
+        "identifier"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "exchange"
+      ],
+      [
+        "key",
+        "authority"
+      ],
+      [
+        "key",
+        "limit"
+      ],
+      [
+        "key",
+        "cursor"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "industry"
+      ],
+      [
+        "key",
+        "industry_type"
+      ],
+      [
+        "key",
+        "registration_authority"
+      ],
+      [
+        "key",
+        "registration_form"
+      ],
+      [
+        "key",
+        "registration_status"
       ]
     ],
     "continent": [
@@ -832,12 +939,28 @@
       [
         "key",
         "origin"
+      ],
+      [
+        "key",
+        "edition"
+      ],
+      [
+        "key",
+        "date"
       ]
     ],
     "tariff_search": [
       [
         "req",
         "query"
+      ],
+      [
+        "key",
+        "edition"
+      ],
+      [
+        "key",
+        "date"
       ]
     ],
     "time": [
@@ -860,6 +983,46 @@
       [
         "key",
         "lang"
+      ],
+      [
+        "key",
+        "disambiguation"
+      ],
+      [
+        "key",
+        "targets"
+      ],
+      [
+        "key",
+        "ip"
+      ],
+      [
+        "key",
+        "city"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "state"
+      ],
+      [
+        "key",
+        "iata"
+      ],
+      [
+        "key",
+        "icao"
+      ],
+      [
+        "key",
+        "unlocode"
+      ],
+      [
+        "key",
+        "address"
       ]
     ],
     "time_at": [
@@ -886,6 +1049,56 @@
       [
         "key",
         "lang"
+      ],
+      [
+        "key",
+        "disambiguation"
+      ],
+      [
+        "key",
+        "targets"
+      ]
+    ],
+    "time_zones": [
+      [
+        "opt",
+        "query"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "area"
+      ],
+      [
+        "key",
+        "offset"
+      ],
+      [
+        "key",
+        "abbreviation"
+      ],
+      [
+        "key",
+        "dst"
+      ],
+      [
+        "key",
+        "observes_dst"
+      ],
+      [
+        "key",
+        "at"
+      ],
+      [
+        "key",
+        "details"
+      ],
+      [
+        "key",
+        "sort"
       ]
     ],
     "timezone": [
@@ -996,40 +1209,6 @@
       [
         "key",
         "date"
-      ]
-    ],
-    "bank": [
-      [
-        "req",
-        "iban"
-      ],
-      [
-        "key",
-        "country"
-      ],
-      [
-        "key",
-        "deep"
-      ]
-    ],
-    "bank_requirements": [
-      [
-        "req",
-        "country"
-      ],
-      [
-        "key",
-        "format"
-      ]
-    ],
-    "bank_us_ach": [
-      [
-        "keyreq",
-        "routing"
-      ],
-      [
-        "keyreq",
-        "account"
       ]
     ]
   },

@@ -156,6 +156,24 @@ module ParseAPI
 			get("/company/#{seg(number)}", country: country, deep: deep, lang: lang)
 		end
 
+		# Fetch a directory profile by its stable Company ID.
+		def company_id(id, deep: false)
+			get("/company/id/#{seg(id)}", deep: deep)
+		end
+
+		# Use at most one selector, or discover by country, industry or selected registration. The API
+		# validates filters; pair the four-digit industry string with industry_type: "sic". Pass a
+		# returned cursor with the same selector and filters. Deep belongs to each result.
+		# Exact registration form/status require registration_authority; status is administrative.
+		def company_search(query: nil, domain: nil, ticker: nil, identifier: nil, country: nil, exchange: nil, authority: nil, limit: nil, cursor: nil, deep: false, industry: nil, industry_type: nil, registration_authority: nil, registration_form: nil, registration_status: nil)
+			get('/company', q: query, domain: domain, ticker: ticker, identifier: identifier, country: country, exchange: exchange, authority: authority, limit: limit, cursor: cursor, deep: deep, industry: industry, industry_type: industry_type, registration_authority: registration_authority, registration_form: registration_form, registration_status: registration_status)
+		end
+
+		# Read the directory edition and source coverage.
+		def company_coverage
+			get('/company/directory/coverage')
+		end
+
 		# Parse an email and check its format and domain. Deep explicitly requests a metered
 		# deliverability check. Deep checks use one attempt by default. An explicit retry count can
 		# repeat paid usage.
@@ -283,12 +301,12 @@ module ParseAPI
 		# schedule columns. Add origin with deep to resolve country-specific measures. Without origin,
 		# schedule detail remains available and origin-dependent fields are null. A null effective rate
 		# is not a zero rate.
-		def tariff(code, deep: false, origin: nil)
-			get("/tariff/#{seg(code)}", deep: deep, origin: origin)
+		def tariff(code, deep: false, origin: nil, edition: nil, date: nil)
+			tariff_selection(get("/tariff/#{seg(code)}", deep: deep, origin: origin, edition: edition, date: date), edition, date)
 		end
 
-		def tariff_search(query)
-			get('/tariff', q: query)
+		def tariff_search(query, edition: nil, date: nil)
+			tariff_selection(get('/tariff', q: query, edition: edition, date: date), edition, date)
 		end
 
 		def currency(code, deep: false, lang: nil)
@@ -308,13 +326,19 @@ module ParseAPI
 			get("/name/#{seg(name)}", country: country, deep: deep, name_locale: name_locale)
 		end
 
-		# Current local time, UTC by default. With to, offsetless at is source wall time.
-		def time(timezone = nil, at: nil, to: nil, deep: false, lang: nil)
-			get(timezone.nil? ? '/time' : "/time/#{seg(timezone)}", at: at, to: to, deep: deep, lang: lang)
+		# Current local time, UTC by default. With to or targets, offsetless at is source wall time.
+		def time(timezone = nil, at: nil, to: nil, deep: false, lang: nil, disambiguation: nil, targets: nil, ip: nil, city: nil, country: nil, state: nil, iata: nil, icao: nil, unlocode: nil, address: nil)
+			raise ArgumentError, 'Time source must be an IANA timezone ID. Use timezone discovery to list IDs.' if timezone && %w[zones help].include?(timezone.strip.downcase)
+			source = time_source(timezone, ip: ip, city: city, country: country, state: state, iata: iata, icao: icao, unlocode: unlocode, address: address)
+			get(timezone.nil? ? '/time' : "/time/#{seg(timezone)}", **source, at: at, to: to, deep: deep, lang: lang, disambiguation: disambiguation, targets: time_targets(targets, to))
 		end
 
-		def time_at(lat, lon, at: nil, to: nil, deep: false, lang: nil)
-			get('/time', lat: lat, lon: lon, at: at, to: to, deep: deep, lang: lang)
+		def time_at(lat, lon, at: nil, to: nil, deep: false, lang: nil, disambiguation: nil, targets: nil)
+			get('/time', lat: lat, lon: lon, at: at, to: to, deep: deep, lang: lang, disambiguation: disambiguation, targets: time_targets(targets, to))
+		end
+
+		def time_zones(query = nil, country: nil, area: nil, offset: nil, abbreviation: nil, dst: nil, observes_dst: nil, at: nil, details: false, sort: nil)
+			get('/time/zones', q: query, country: country, area: area, offset: offset, abbreviation: abbreviation, dst: dst.nil? ? nil : dst.to_s, observes_dst: observes_dst.nil? ? nil : observes_dst.to_s, at: at, details: details, sort: sort)
 		end
 
 		def timezone(id, at: nil, to: nil, deep: false, lang: nil)
@@ -379,6 +403,33 @@ module ParseAPI
 		end
 
 		private
+
+		def tariff_selection(result, edition, date)
+			if (!edition.nil? || !date.nil?) && (!result['edition'].is_a?(String) || !/\A[a-f0-9]{64}\z/.match?(result['edition']) || (!edition.nil? && result['edition'] != edition) || result['date'] != date)
+				raise Error.new(status: 0, code: 'tariff_selection_mismatch', message: 'Tariff response did not confirm the requested edition/date. The server may not support this selection.')
+			end
+			result
+		end
+
+		def time_source(timezone, **values)
+			primary = values.values_at(:ip, :city, :iata, :icao, :unlocode, :address).compact
+			if values.values.any? { |v| !v.nil? && (!v.is_a?(String) || v.strip.empty?) } ||
+				(!timezone.nil? && values.values.any? { |v| !v.nil? }) || primary.length > 1 ||
+				(!values[:country].nil? && !primary.empty? && values[:city].nil? && values[:address].nil?) ||
+				(!values[:state].nil? && ((values[:city].nil? && values[:address].nil?) || values[:country].nil?)) ||
+				(!values[:address].nil? && values[:country].nil?)
+				raise ArgumentError, 'Pass one Time source, using country only with city or address and state only with city or address and country.'
+			end
+			values
+		end
+
+		def time_targets(targets, to)
+			return nil if targets.nil?
+			unless to.nil? && targets.is_a?(Array) && (1..10).cover?(targets.length) && targets.all? { |zone| zone.is_a?(String) && !zone.strip.empty? && !zone.include?(',') }
+				raise ArgumentError, 'Time targets requires 1 to 10 timezone IDs and cannot be combined with to.'
+			end
+			targets.join(',')
+		end
 
 		def seg(value)
 			URI.encode_www_form_component(value.to_s).gsub('+', '%20')
