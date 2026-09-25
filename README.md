@@ -284,27 +284,28 @@ Full field reference for every endpoint: [parseapi.com/docs](https://parseapi.co
 
 ## Card
 
-Card looks up issuer, network and type from a BIN/IIN. It accepts 6-11 digits as a string, including leading zeros. Spaces and hyphens are accepted. `prefix` is the actual longest match and can be shorter than the input. Unknown reference fields are null. Invalid prefixes and full card numbers are rejected locally before a request is sent. Accepted input is sent unchanged.
+Send 2–11 leading digits as a string. Core returns `bin`, `brand`, `brand_name`
+and a CDN SVG `logo`. Brand detection uses reviewed network rules independently
+of issuer records. Unknown or ambiguous prefixes return null brand fields and a
+generic logo; a known network without reviewed artwork also uses the generic logo.
 
-Compare `prefix` with the normalized response `bin`. A matched row can still have all metadata unknown. Keep unknown prepaid status separate from true and false.
+Optional Deep adds `prefix`, `issuer`, `country`, `type` and `prepaid`, included
+in the same pooled request on every plan. Six or more digits enable directory
+matching. Fewer digits return all-null Deep fields. Compare `deep.prefix` with
+`bin`: equal is an exact recorded match; shorter is broader; null is no match.
+The longest row wins, including null fields. `prepaid: null` means unknown, not
+false. This is partial reference data, not card validity or payment acceptance.
 
 ```ruby
-card = parse.card('4242 42-99')
-match = if card['prefix'].nil?
-  'No reference match'
-elsif card['prefix'] == card['bin']
-  'Exact prefix match'
-else
-  'Broader prefix match'
-end
-prepaid = case card['prepaid']
-when nil then 'Unknown prepaid status'
-when true then 'Prepaid'
-when false then 'Not prepaid'
-end
-puts "#{match}, #{prepaid}"
+card = parse.card("51")
+puts card["logo"]
+details = parse.card("43737400", deep: true)
+issuer = details["deep"]["issuer"]
 ```
 
+Leading zeros are preserved. Only ASCII spaces, tabs, CR, LF and hyphens are
+removed; raw input is limited to 64 characters. Invalid prefixes are rejected
+before dispatch, accepted input is forwarded unchanged. Never send a full card number.
 
 ## Optional detail
 

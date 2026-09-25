@@ -90,6 +90,10 @@
       [
         "req",
         "bin"
+      ],
+      [
+        "key",
+        "deep"
       ]
     ],
     "carrier": [

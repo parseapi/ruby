@@ -174,10 +174,10 @@ module ParseAPI
 			get("/bank", {}, {}, { iban: iban, country: country, deep: deep }.reject { |_key, value| value.nil? })
 		end
 
-		# Look up a 6-11 digit card prefix, preserving leading zeros.
-		def card(bin)
-			raise ArgumentError, 'parseapi: Card requires a 6-11 digit prefix string.' unless bin.is_a?(String) && bin.length <= 64 && /\A[0-9]{6,11}\z/.match?(bin.delete(" \t\r\n-"))
-			get("/card/#{seg(bin)}")
+		# Look up a 2-11 digit card prefix, preserving leading zeros.
+		def card(bin, deep: false)
+			raise ArgumentError, 'parseapi: Card requires a 2-11 digit prefix string.' unless bin.is_a?(String) && bin.length <= 64 && /\A[0-9]{2,11}\z/.match?(bin.delete(" \t\r\n-"))
+			get("/card/#{seg(bin)}", deep: deep)
 		end
 
 

@@ -142,6 +142,12 @@ class TestUrlMapping < Minitest::Test
 		assert_equal body, client.card('00 1234-56')
 	end
 
+	def test_card_deep_preserves_null_false_and_prefix
+		body = { 'bin' => '00123456', 'brand' => nil, 'brand_name' => nil, 'logo' => 'https://cdn.parseapi.com/card/generic.svg', 'deep' => { 'prefix' => '001234', 'country' => nil, 'issuer' => nil, 'type' => nil, 'prepaid' => false }, 'future' => true }
+		client = stub_client(responses: [[200, {}, JSON.generate(body)]])
+		assert_equal body, client.card('00 1234-56', deep: true)
+	end
+
 	def test_name_preserves_nullable_evidence_and_future_fields
 		body = { 'name' => '王', 'valid' => true, 'deep' => { 'gender' => nil, 'salutation' => nil }, 'future' => true }
 		client = stub_client(responses: [[200, {}, JSON.generate(body)]])
@@ -161,6 +167,7 @@ class TestUrlMapping < Minitest::Test
 
 	TABLE = {
 		'card' => [->(p) { p.card('001234') }, 'https://api.parseapi.com/card/001234'],
+		'card deep' => [->(p) { p.card('51', deep: true) }, 'https://api.parseapi.com/card/51?deep=true'],
 		'card separators' => [->(p) { p.card('00 1234-56') }, 'https://api.parseapi.com/card/00%201234-56'],
 		'dns' => [->(p) { p.dns('example.com') }, 'https://api.parseapi.com/dns/example.com'],
 		'dns type' => [->(p) { p.dns('_dmarc.bücher.example.', type: 'txt') }, 'https://api.parseapi.com/dns/_dmarc.b%C3%BCcher.example.?type=txt'],
@@ -580,9 +587,9 @@ end
 class TestCardDX < Minitest::Test
   def test_invalid_card_inputs_never_reach_transport
     client = StubClient.new('k')
-    ['4111111111111111', '4111-1111-1111-1111', '12345', '123456789012', '１２３４５６', "001\u00a0234", "001\u200b234", '00%20234', "001\v234", ' ' * 59 + '001234', nil, 123456].each do |input|
+    ['4111111111111111', '4111-1111-1111-1111', '1', '123456789012', '１２３４５６', "001\u00a0234", "001\u200b234", '00%20234', "001\v234", ' ' * 59 + '001234', nil, 123456].each do |input|
       error = assert_raises(ArgumentError) { client.card(input) }
-      assert_equal 'parseapi: Card requires a 6-11 digit prefix string.', error.message
+      assert_equal 'parseapi: Card requires a 2-11 digit prefix string.', error.message
     end
     assert_empty client.calls
     [" \t00-1234\r\n", ' ' * 58 + '001234', '12345678901'].each do |raw|
