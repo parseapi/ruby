@@ -483,6 +483,30 @@
         "date"
       ]
     ],
+    "industry": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "industry_search": [
+      [
+        "req",
+        "query"
+      ],
+      [
+        "key",
+        "limit"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
     "initialize": [
       [
         "opt",
@@ -634,20 +658,6 @@
         "name_locale"
       ]
     ],
-    "provider": [
-      [
-        "req",
-        "npi"
-      ],
-      [
-        "key",
-        "deep"
-      ],
-      [
-        "key",
-        "lang"
-      ]
-    ],
     "phone": [
       [
         "req",
@@ -736,6 +746,20 @@
       [
         "key",
         "unit"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ]
+    ],
+    "provider": [
+      [
+        "req",
+        "npi"
       ],
       [
         "key",

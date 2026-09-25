@@ -171,10 +171,10 @@ class TestUrlMapping < Minitest::Test
 		'card separators' => [->(p) { p.card('00 1234-56') }, 'https://api.parseapi.com/card/00%201234-56'],
 		'dns' => [->(p) { p.dns('example.com') }, 'https://api.parseapi.com/dns/example.com'],
 		'dns type' => [->(p) { p.dns('_dmarc.bücher.example.', type: 'txt') }, 'https://api.parseapi.com/dns/_dmarc.b%C3%BCcher.example.?type=txt'],
-		'naics' => [->(p) { p.naics('31-33') }, 'https://api.parseapi.com/naics/31-33'],
-		'naics encoded' => [->(p) { p.naics('54/11') }, 'https://api.parseapi.com/naics/54%2F11'],
-		'naics_search' => [->(p) { p.naics_search('coffee & tea', limit: 5) }, 'https://api.parseapi.com/naics?q=coffee+%26+tea&limit=5'],
-		'naics_search default' => [->(p) { p.naics_search('plumbing') }, 'https://api.parseapi.com/naics?q=plumbing'],
+		'naics' => [->(p) { p.industry('31-33') }, 'https://api.parseapi.com/industry/31-33'],
+		'naics encoded' => [->(p) { p.industry('54/11') }, 'https://api.parseapi.com/industry/54%2F11'],
+		'industry_search' => [->(p) { p.industry_search('coffee & tea', limit: 5) }, 'https://api.parseapi.com/industry?q=coffee+%26+tea&limit=5'],
+		'industry_search default' => [->(p) { p.industry_search('plumbing') }, 'https://api.parseapi.com/industry?q=plumbing'],
 		'name country' => [->(p) { p.name('Andrea / Smith', country: 'IT') }, 'https://api.parseapi.com/name/Andrea%20%2F%20Smith?country=IT'],
 		'measure' => [->(p) { p.measure('5 ft 11 in', to: 'cm', locale: 'en-US', system: 'us') }, 'https://api.parseapi.com/measure/5%20ft%2011%20in?to=cm&locale=en-US&system=us'],
 		'measure compound' => [->(p) { p.measure('1 kg/m^3', to: 'g/L') }, 'https://api.parseapi.com/measure/1%20kg%2Fm%5E3?to=g%2FL'],
@@ -477,8 +477,8 @@ class TestNAICSEvidence < Minitest::Test
   records.each do |record|
    body = { 'q' => 'sofware', 'year' => 2022, 'country' => 'US', 'results' => [record] }
    client = StubClient.new('test_key', retries: 0, responses: [[200, {}, JSON.generate(body)]])
-   assert_equal body, client.naics_search('sofware')
-   assert_equal 'https://api.parseapi.com/naics?q=sofware', client.calls[0][:url]
+   assert_equal body, client.industry_search('sofware')
+   assert_equal 'https://api.parseapi.com/industry?q=sofware', client.calls[0][:url]
   end
  end
 end

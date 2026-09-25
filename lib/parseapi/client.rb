@@ -257,13 +257,22 @@ module ParseAPI
 		end
 
 		# US NAICS 2022 definition and hierarchy.
+		# Compatibility names for Industry.
 		def naics(code, deep: false)
-			get("/naics/#{seg(code)}", deep: deep)
+			industry(code, deep: deep)
+		end
+
+		def naics_search(query, limit: nil, deep: false)
+			industry_search(query, limit: limit, deep: deep)
+		end
+
+		def industry(code, deep: false)
+			get("/industry/#{seg(code)}", deep: deep)
 		end
 
 		# Keyword search. Limit defaults to 10 and accepts 1-50.
-		def naics_search(query, limit: nil, deep: false)
-			get('/naics', q: query, limit: limit, deep: deep)
+		def industry_search(query, limit: nil, deep: false)
+			get('/industry', q: query, limit: limit, deep: deep)
 		end
 
 		# Look up the general US duty schedule line. Paid deep adds units and the special and other
