@@ -156,6 +156,23 @@ module ParseAPI
 			get("/company/#{seg(number)}", country: country, deep: deep, lang: lang)
 		end
 
+		# Fetch a directory profile by its stable Company ID.
+		def company_id(id, deep: false)
+			get("/company/id/#{seg(id)}", deep: deep)
+		end
+
+		# Use at most one selector, or discover by country, industry or selected registration. The API
+		# validates filters; pair the four-digit industry string with industry_type: "sic". Pass a
+		# returned cursor with the same selector and filters. Deep belongs to each result.
+		def company_search(query: nil, domain: nil, ticker: nil, identifier: nil, country: nil, exchange: nil, authority: nil, limit: nil, cursor: nil, deep: false, industry: nil, industry_type: nil)
+			get('/company', q: query, domain: domain, ticker: ticker, identifier: identifier, country: country, exchange: exchange, authority: authority, limit: limit, cursor: cursor, deep: deep, industry: industry, industry_type: industry_type)
+		end
+
+		# Read the directory edition and source coverage.
+		def company_coverage
+			get('/company/directory/coverage')
+		end
+
 		# Parse an email and check its format and domain. Deep explicitly requests a metered
 		# deliverability check. Deep checks use one attempt by default. An explicit retry count can
 		# repeat paid usage.

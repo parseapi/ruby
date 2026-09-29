@@ -268,9 +268,7 @@
         "lang"
       ]
     ],
-    "close": [
-
-    ],
+    "close": [],
     "company": [
       [
         "req",
@@ -287,6 +285,67 @@
       [
         "key",
         "lang"
+      ]
+    ],
+    "company_coverage": [],
+    "company_id": [
+      [
+        "req",
+        "id"
+      ],
+      [
+        "key",
+        "deep"
+      ]
+    ],
+    "company_search": [
+      [
+        "key",
+        "query"
+      ],
+      [
+        "key",
+        "domain"
+      ],
+      [
+        "key",
+        "ticker"
+      ],
+      [
+        "key",
+        "identifier"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "exchange"
+      ],
+      [
+        "key",
+        "authority"
+      ],
+      [
+        "key",
+        "limit"
+      ],
+      [
+        "key",
+        "cursor"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "industry"
+      ],
+      [
+        "key",
+        "industry_type"
       ]
     ],
     "continent": [
@@ -589,9 +648,7 @@
         "transport"
       ]
     ],
-    "inspect": [
-
-    ],
+    "inspect": [],
     "ip": [
       [
         "req",
@@ -1182,12 +1239,8 @@
     ]
   },
   "ParseAPI::Error": {
-    "code": [
-
-    ],
-    "docs": [
-
-    ],
+    "code": [],
+    "docs": [],
     "initialize": [
       [
         "keyreq",
@@ -1214,14 +1267,8 @@
         "retry_after"
       ]
     ],
-    "request_id": [
-
-    ],
-    "retry_after": [
-
-    ],
-    "status": [
-
-    ]
+    "request_id": [],
+    "retry_after": [],
+    "status": []
   }
 }
