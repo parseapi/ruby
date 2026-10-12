@@ -1,4 +1,5 @@
 require 'json'
+require 'date'
 require 'net/http'
 require 'uri'
 require 'time'
@@ -328,6 +329,44 @@ module ParseAPI
 			get("/currency/#{seg(base)}/#{seg(quote)}", date: date, amount: amount)
 		end
 
+		# Source discovery preserves nullable history bounds and currency coverage.
+
+		# Ordered quotes in one pooled lookup. Amounts and conversions are JSON numbers.
+		def currency_rates(base, quotes = nil, date: nil, amount: nil)
+			params = currency_query(quotes, amount)
+			currency_day(date) unless date.nil?
+			get("/currency/#{seg(base)}/rates", { date: date }.merge(params))
+		end
+
+		# Maintained currency metadata, independently of available rate coverage.
+		def currency_list(q: nil, country: nil, deep: false, lang: nil)
+			get('/currency', q: q, country: country, deep: deep, lang: lang)
+		end
+
+
+
+		# Daily history, or week/month samples anchored to from with to included.
+		def currency_history(base, quote, from:, to:, amount: nil, interval: nil)
+			currency_history_range(from, to, 1, interval)
+			get("/currency/#{seg(base)}/#{seg(quote)}/history", { interval: interval, from: from, to: to }.merge(currency_query(nil, amount)))
+		end
+
+		# Up to 50 quotes and 5000 sampled quote-dates, including gaps.
+		def currency_rates_history(base, quotes, from:, to:, amount: nil, interval: nil)
+			params = currency_query(quotes, amount)
+			currency_history_range(from, to, quotes.length, interval)
+			get("/currency/#{seg(base)}/rates/history", { interval: interval, from: from, to: to }.merge(params))
+		end
+
+		# Raw UTF-8 CSV in body, with response headers and attachment filename.
+
+
+		# Publication averages, extrema and honest calendar gaps for month, quarter or year.
+		def currency_rates_summary(base, quotes, from:, to:, interval: nil)
+			get("/currency/#{seg(base)}/rates/summary", currency_summary_query(quotes, from, to, interval))
+		end
+
+
 		def language(code, deep: false, lang: nil)
 			get("/language/#{seg(code)}", deep: deep, lang: lang)
 		end
@@ -414,6 +453,46 @@ module ParseAPI
 		end
 
 		private
+
+		def currency_history_range(from, to, quotes, interval)
+			raise ArgumentError, 'Currency history interval must be day, week or month.' unless interval.nil? || %w[day week month].include?(interval)
+			currency_range(from, to, quotes, interval.nil? || interval == 'day' ? 366 : 36600)
+		end
+
+		def currency_summary_query(quotes, from, to, interval)
+			raise ArgumentError, 'Currency summary interval must be month, quarter or year.' unless interval.nil? || %w[month quarter year].include?(interval)
+			params = currency_query(quotes, nil).select { |key, _| %i[quotes].include?(key) }
+			currency_range(from, to, quotes.length, 36600)
+			{ from: from, to: to, interval: interval }.merge(params)
+		end
+
+		def currency_query(quotes, amount)
+			raise ArgumentError, 'Currency amount must be finite and within +/-1e15.' unless amount.nil? || (amount.is_a?(Numeric) && amount.respond_to?(:finite?) && amount.finite? && amount.abs <= 1e15)
+			params = { amount: amount }
+			unless quotes.nil?
+				raise ArgumentError, 'Currency quotes requires 1 to 50 codes.' unless quotes.is_a?(Array) && (1..50).cover?(quotes.length)
+				seen = {}
+				quotes.each do |code|
+					raise ArgumentError, 'Currency quotes must be distinct three-letter codes.' unless code.is_a?(String) && /\A[A-Za-z]{3}\z/.match?(code.strip) && !seen[code.strip.upcase]
+					seen[code.strip.upcase] = true
+				end
+				params = { quotes: quotes.map(&:strip).join(',') }.merge(params)
+			end
+			params
+		end
+
+		def currency_day(day)
+			raise ArgumentError, 'Currency dates must be real UTC days from year 1000 through today.' unless day.is_a?(String) && /\A[0-9]{4}-[0-9]{2}-[0-9]{2}\z/.match?(day)
+			date = Date.iso8601(day, Date::GREGORIAN)
+			raise ArgumentError, 'Currency dates must be real UTC days from year 1000 through today.' unless date >= Date.new(1000, 1, 1, Date::GREGORIAN) && date <= Time.now.utc.to_date
+			date
+		end
+
+		def currency_range(from, to, quotes, max_days = 366)
+			days = (currency_day(to) - currency_day(from)).to_i + 1
+			raise ArgumentError, "Currency history requires 1 to #{max_days} days within the API read and output limits." unless (1..max_days).cover?(days) && (max_days != 366 || days * quotes <= 5000)
+		end
+
 
 		def time_source(timezone, **values)
 			primary = values.values_at(:ip, :city, :iata, :icao, :unlocode, :address).compact

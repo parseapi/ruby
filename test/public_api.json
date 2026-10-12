@@ -406,6 +406,32 @@
         "lang"
       ]
     ],
+    "currency_history": [
+      [
+        "req",
+        "base"
+      ],
+      [
+        "req",
+        "quote"
+      ],
+      [
+        "keyreq",
+        "from"
+      ],
+      [
+        "keyreq",
+        "to"
+      ],
+      [
+        "key",
+        "amount"
+      ],
+      [
+        "key",
+        "interval"
+      ]
+    ],
     "currency_rate": [
       [
         "req",
@@ -422,6 +448,50 @@
       [
         "key",
         "amount"
+      ]
+    ],
+    "currency_rates": [
+      [
+        "req",
+        "base"
+      ],
+      [
+        "opt",
+        "quotes"
+      ],
+      [
+        "key",
+        "date"
+      ],
+      [
+        "key",
+        "amount"
+      ]
+    ],
+    "currency_rates_history": [
+      [
+        "req",
+        "base"
+      ],
+      [
+        "req",
+        "quotes"
+      ],
+      [
+        "keyreq",
+        "from"
+      ],
+      [
+        "keyreq",
+        "to"
+      ],
+      [
+        "key",
+        "amount"
+      ],
+      [
+        "key",
+        "interval"
       ]
     ],
     "date": [
@@ -1235,6 +1305,46 @@
       [
         "key",
         "date"
+      ]
+    ],
+    "currency_list": [
+      [
+        "key",
+        "q"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ]
+    ],
+    "currency_rates_summary": [
+      [
+        "req",
+        "base"
+      ],
+      [
+        "req",
+        "quotes"
+      ],
+      [
+        "keyreq",
+        "from"
+      ],
+      [
+        "keyreq",
+        "to"
+      ],
+      [
+        "key",
+        "interval"
       ]
     ]
   },

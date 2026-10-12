@@ -160,6 +160,35 @@ DNS uses pooled requests on every plan. Omit `type` to check A, AAAA, CNAME, MX,
 
 Name paid deep includes flat `short`, `directory`, and `initials` fields beside `gender` and `salutation`. `name_locale` selects CLDR formatting rules and defaults to `en`. It changes formatting only. Country remains gender context, and unavailable formatting is null. Older responses may omit these fields.
 
+## Currency reference rates
+
+Use maintained reference rates and keep their original observation dates visible. These additions in the source candidate require the matching Currency API release.
+```ruby
+rate = parse.currency_rate('USD', 'EUR', amount: 100)
+batch = parse.currency_rates('EUR', %w[USD JPY])
+history = parse.currency_history('EUR', 'USD', from: '2024-01-01', to: '2024-12-31')
+comparison = parse.currency_rates_history('EUR', %w[USD JPY], from: '2024-01-01', to: '2024-01-31')
+all = parse.currency_rates("USD")
+catalog = parse.currency_list(q: "dollar")
+
+```
+
+Dated rates and history automatically select from the maintained archives. Missing quotes and dates stay explicit. Amount conversion uses known currency decimal precision. Rates, amounts and converted values are JSON numbers.
+
+
+Batch rates use a currency-keyed `rates` object. Read `batch['rates']['USD']['rate']` directly. Each quote retains its source observation date and optional conversion, while `missing` retains unavailable quotes and their reasons. History, catalogs and summaries keep ordered `data` arrays with their context. The catalog uses `/currency`. Its optional `lang` translates available currency names and Deep plural names using the same policy as individual metadata lookups; identifiers, symbols and numeric facts stay unchanged. History keeps shared base, pair and requested amount on the envelope. Its ordered rows retain requested days, source observation dates and necessary qualifications. All-quotes lookup uses the complete available rate vector. Optional Core `units` identifies troy ounces or indexed units. The API omits empty missing arrays. Lists and all-quotes batches exclude metals and test/no-currency codes.
+
+### Currency history sampling and period summaries
+
+```ruby
+sampled = parse.currency_history('USD', 'JPY', from: '1999-01-01', to: '2026-10-09' interval: 'month')
+report = parse.currency_rates_summary('USD', ['EUR'], from: '1999-01-01', to: '1999-01-31' interval: 'month')
+```
+
+History accepts `interval` (`Interval` in Go): `day` by default, or `week` and `month` for longer ranges. Samples start at `from` and include `to`. Weekly samples advance seven days. Monthly samples retain the original day of month and clamp in shorter months. Week/month history and period summaries accept at most 36,600 calendar days, under a complete read bound of 100,000 currency-day rows including a 30-day lookback. History output is bounded to 5,000 requested quote-dates, including gaps. Reduce the range or quote list when a request exceeds a bound.
+
+Period summaries use `month` by default, or `quarter` and `year`. Each row gives `average`, `min`, `max`, `observation_count`, `first_date`, `last_date` and `missing_day_count`. Averages count each original effective observation date once. ParseAPI carry-forward rows add no observations. Bank-supplied calendar dates still count when values repeat; they are not all proven fresh publications. Periods at the edges are clipped to the requested range. A period with no observations is explicit in `missing`. Summaries do not accept amounts or Deep.
+
 ## Display language
 
 Choose display names for one request:
