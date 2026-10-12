@@ -394,13 +394,42 @@ module ParseAPI
 			get('/weather', lat: lat, lon: lon, deep: deep, date: date)
 		end
 
-		def emoji(emoji, deep: false, lang: nil)
-			get("/emoji/#{seg(emoji)}", deep: deep, lang: lang)
+		def emoji(emoji, deep: false, lang: nil, shortcode_source: nil)
+			get("/emoji/#{seg(emoji)}", deep: deep, lang: lang, shortcode_source: shortcode_source)
 		end
 
-		def emoji_search(query, limit: nil, deep: false, lang: nil)
-			get('/emoji', q: query, limit: limit, deep: deep, lang: lang)
+		def emoji_search(query, limit: nil, deep: false, lang: nil, category: nil, subcategory: nil, version: nil, max_version: nil, include_skin_tones: nil, offset: nil)
+			get('/emoji', q: query, limit: limit, deep: deep, lang: lang, category: category, subcategory: subcategory, version: version, max_version: max_version, include_skin_tones: include_skin_tones.nil? ? nil : include_skin_tones.to_s, offset: offset)
 		end
+
+		def emoji_browse(limit: nil, deep: false, lang: nil, category: nil, subcategory: nil, version: nil, max_version: nil, include_skin_tones: nil, offset: nil)
+			get('/emoji', limit: limit, deep: deep, lang: lang, category: category, subcategory: subcategory, version: version, max_version: max_version, include_skin_tones: include_skin_tones.nil? ? nil : include_skin_tones.to_s, offset: offset)
+		end
+
+		# Download the full filtered JSON catalog, including offline resolution maps.
+		def emoji_catalog(deep: true, lang: nil, category: nil, subcategory: nil, version: nil, max_version: nil, include_skin_tones: nil, profile: nil)
+			get('/emoji/catalog', profile: profile, deep: deep.to_s, lang: lang, category: category, subcategory: subcategory, version: version, max_version: max_version, include_skin_tones: include_skin_tones.nil? ? nil : include_skin_tones.to_s)
+		end
+
+		def emoji_metadata
+			get('/emoji/metadata')
+		end
+
+		def emoji_categories
+			get('/emoji/categories')
+		end
+
+		# Positions are UTF-16 code units; end is exclusive.
+		def emoji_parse(text, deep: false, lang: nil)
+			get('/emoji/parse', { deep: deep, lang: lang }, {}, { text: text })
+		end
+
+		def emoji_convert(text, direction:, shortcode_source:)
+			get('/emoji/convert', {direction: direction, shortcode_source: shortcode_source}, {}, {text: text})
+		end
+
+
+
 
 		# Parse or convert a measurement. Amount is a decimal string. Without to, use the
 		# type's canonical unit. Locale and system (us or imperial) resolve explicit ambiguity.
