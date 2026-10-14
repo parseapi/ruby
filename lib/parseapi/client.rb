@@ -433,6 +433,7 @@ module ParseAPI
 
 		# Parse or convert a measurement. Amount is a decimal string. Without to, use the
 		# type's canonical unit. Locale and system (us or imperial) resolve explicit ambiguity.
+		# Successful JSON omits reason and choices. Invalid input adds reason and alternatives add choices.
 		def measure(measure, to: nil, locale: nil, system: nil)
 			get("/measure/#{seg(measure)}", to: to, locale: locale, system: system)
 		end
