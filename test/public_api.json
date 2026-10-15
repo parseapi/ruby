@@ -174,6 +174,96 @@
       [
         "key",
         "lang"
+      ],
+      [
+        "key",
+        "type"
+      ],
+      [
+        "key",
+        "grain"
+      ],
+      [
+        "key",
+        "hierarchy"
+      ],
+      [
+        "key",
+        "aliases"
+      ],
+      [
+        "key",
+        "ambiguity"
+      ],
+      [
+        "key",
+        "format"
+      ],
+      [
+        "key",
+        "romanized"
+      ]
+    ],
+    "city_ancestors": [
+      [
+        "req",
+        "id"
+      ],
+      [
+        "key",
+        "hierarchy"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ],
+      [
+        "key",
+        "romanized"
+      ]
+    ],
+    "city_children": [
+      [
+        "req",
+        "id"
+      ],
+      [
+        "key",
+        "limit"
+      ],
+      [
+        "key",
+        "cursor"
+      ],
+      [
+        "key",
+        "hierarchy"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ],
+      [
+        "key",
+        "romanized"
+      ]
+    ],
+    "city_distance": [
+      [
+        "req",
+        "from"
+      ],
+      [
+        "req",
+        "to"
       ]
     ],
     "city_id": [
@@ -188,6 +278,104 @@
       [
         "key",
         "lang"
+      ],
+      [
+        "key",
+        "hierarchy"
+      ],
+      [
+        "key",
+        "format"
+      ],
+      [
+        "key",
+        "romanized"
+      ]
+    ],
+    "city_list": [
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "state"
+      ],
+      [
+        "key",
+        "limit"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ],
+      [
+        "key",
+        "type"
+      ],
+      [
+        "key",
+        "grain"
+      ],
+      [
+        "key",
+        "hierarchy"
+      ],
+      [
+        "key",
+        "min_population"
+      ],
+      [
+        "key",
+        "max_population"
+      ],
+      [
+        "key",
+        "timezone"
+      ],
+      [
+        "key",
+        "bbox"
+      ],
+      [
+        "key",
+        "sort"
+      ],
+      [
+        "key",
+        "order"
+      ],
+      [
+        "key",
+        "cursor"
+      ],
+      [
+        "key",
+        "countries"
+      ],
+      [
+        "key",
+        "exclude_countries"
+      ],
+      [
+        "key",
+        "timezones"
+      ],
+      [
+        "key",
+        "min_elevation"
+      ],
+      [
+        "key",
+        "max_elevation"
+      ],
+      [
+        "key",
+        "romanized"
       ]
     ],
     "city_nearby": [
@@ -222,6 +410,188 @@
       [
         "key",
         "lang"
+      ],
+      [
+        "key",
+        "type"
+      ],
+      [
+        "key",
+        "grain"
+      ],
+      [
+        "key",
+        "hierarchy"
+      ],
+      [
+        "key",
+        "aliases"
+      ],
+      [
+        "key",
+        "ambiguity"
+      ],
+      [
+        "key",
+        "min_population"
+      ],
+      [
+        "key",
+        "max_population"
+      ],
+      [
+        "key",
+        "timezone"
+      ],
+      [
+        "key",
+        "bbox"
+      ],
+      [
+        "key",
+        "sort"
+      ],
+      [
+        "key",
+        "order"
+      ],
+      [
+        "key",
+        "page"
+      ],
+      [
+        "key",
+        "cursor"
+      ],
+      [
+        "key",
+        "format"
+      ],
+      [
+        "key",
+        "countries"
+      ],
+      [
+        "key",
+        "exclude_countries"
+      ],
+      [
+        "key",
+        "timezones"
+      ],
+      [
+        "key",
+        "min_elevation"
+      ],
+      [
+        "key",
+        "max_elevation"
+      ],
+      [
+        "key",
+        "romanized"
+      ]
+    ],
+    "city_nearby_coords": [
+      [
+        "req",
+        "lat"
+      ],
+      [
+        "req",
+        "lon"
+      ],
+      [
+        "key",
+        "radius"
+      ],
+      [
+        "key",
+        "unit"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "state"
+      ],
+      [
+        "key",
+        "limit"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ],
+      [
+        "key",
+        "type"
+      ],
+      [
+        "key",
+        "grain"
+      ],
+      [
+        "key",
+        "hierarchy"
+      ],
+      [
+        "key",
+        "min_population"
+      ],
+      [
+        "key",
+        "max_population"
+      ],
+      [
+        "key",
+        "timezone"
+      ],
+      [
+        "key",
+        "bbox"
+      ],
+      [
+        "key",
+        "sort"
+      ],
+      [
+        "key",
+        "order"
+      ],
+      [
+        "key",
+        "cursor"
+      ],
+      [
+        "key",
+        "countries"
+      ],
+      [
+        "key",
+        "exclude_countries"
+      ],
+      [
+        "key",
+        "timezones"
+      ],
+      [
+        "key",
+        "min_elevation"
+      ],
+      [
+        "key",
+        "max_elevation"
+      ],
+      [
+        "key",
+        "romanized"
       ]
     ],
     "city_nearest": [
@@ -240,6 +610,34 @@
       [
         "key",
         "lang"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "state"
+      ],
+      [
+        "key",
+        "type"
+      ],
+      [
+        "key",
+        "grain"
+      ],
+      [
+        "key",
+        "hierarchy"
+      ],
+      [
+        "key",
+        "format"
+      ],
+      [
+        "key",
+        "romanized"
       ]
     ],
     "city_search": [
@@ -266,11 +664,123 @@
       [
         "key",
         "lang"
+      ],
+      [
+        "key",
+        "type"
+      ],
+      [
+        "key",
+        "grain"
+      ],
+      [
+        "key",
+        "hierarchy"
+      ],
+      [
+        "key",
+        "aliases"
+      ],
+      [
+        "key",
+        "min_population"
+      ],
+      [
+        "key",
+        "max_population"
+      ],
+      [
+        "key",
+        "timezone"
+      ],
+      [
+        "key",
+        "bbox"
+      ],
+      [
+        "key",
+        "sort"
+      ],
+      [
+        "key",
+        "order"
+      ],
+      [
+        "key",
+        "page"
+      ],
+      [
+        "key",
+        "cursor"
+      ],
+      [
+        "key",
+        "format"
+      ],
+      [
+        "key",
+        "countries"
+      ],
+      [
+        "key",
+        "exclude_countries"
+      ],
+      [
+        "key",
+        "timezones"
+      ],
+      [
+        "key",
+        "min_elevation"
+      ],
+      [
+        "key",
+        "max_elevation"
+      ],
+      [
+        "key",
+        "match"
+      ],
+      [
+        "key",
+        "max_distance"
+      ],
+      [
+        "key",
+        "romanized"
       ]
     ],
-    "close": [
-
+    "city_siblings": [
+      [
+        "req",
+        "id"
+      ],
+      [
+        "key",
+        "limit"
+      ],
+      [
+        "key",
+        "cursor"
+      ],
+      [
+        "key",
+        "hierarchy"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ],
+      [
+        "key",
+        "romanized"
+      ]
     ],
+    "close": [],
     "company": [
       [
         "req",
@@ -289,9 +799,7 @@
         "lang"
       ]
     ],
-    "company_coverage": [
-
-    ],
+    "company_coverage": [],
     "company_id": [
       [
         "req",
@@ -616,9 +1124,7 @@
         "profile"
       ]
     ],
-    "emoji_categories": [
-
-    ],
+    "emoji_categories": [],
     "emoji_convert": [
       [
         "req",
@@ -633,9 +1139,7 @@
         "shortcode_source"
       ]
     ],
-    "emoji_metadata": [
-
-    ],
+    "emoji_metadata": [],
     "emoji_parse": [
       [
         "req",
@@ -786,9 +1290,7 @@
         "transport"
       ]
     ],
-    "inspect": [
-
-    ],
+    "inspect": [],
     "ip": [
       [
         "req",
@@ -1379,12 +1881,9 @@
     ]
   },
   "ParseAPI::Error": {
-    "code": [
-
-    ],
-    "docs": [
-
-    ],
+    "candidates": [],
+    "code": [],
+    "docs": [],
     "initialize": [
       [
         "keyreq",
@@ -1411,14 +1910,8 @@
         "retry_after"
       ]
     ],
-    "request_id": [
-
-    ],
-    "retry_after": [
-
-    ],
-    "status": [
-
-    ]
+    "request_id": [],
+    "retry_after": [],
+    "status": []
   }
 }

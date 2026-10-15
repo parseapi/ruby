@@ -6,7 +6,7 @@ require 'time'
 module ParseAPI
 	# Every non-2xx response from the API. Branch on +code+, never on the message.
 	class Error < StandardError
-		attr_reader :status, :code, :docs, :request_id, :retry_after
+		attr_reader :status, :code, :docs, :request_id, :retry_after, :candidates
 
 		def initialize(status:, code:, message:, docs: nil, request_id: nil, retry_after: nil)
 			super(message)
@@ -106,28 +106,69 @@ module ParseAPI
 			get("/district/#{seg(code)}", country: country, state: state, deep: deep, lang: lang)
 		end
 
-		def city(name, country: nil, state: nil, deep: false, lang: nil)
-			get("/city/#{seg(name)}", country: country, state: state, deep: deep, lang: lang)
+		def city(name, country: nil, state: nil, deep: false, lang: nil, type: nil, grain: nil, hierarchy: false, aliases: false, ambiguity: nil, format: nil, romanized: false)
+			get("/city/#{seg(name)}", country: country, state: state, deep: deep, lang: lang, type: type, grain: grain, hierarchy: hierarchy, aliases: aliases, ambiguity: ambiguity, romanized: romanized, format: format)
 		end
 
-		def city_id(id, deep: false, lang: nil)
-			get("/city/id/#{seg(id)}", deep: deep, lang: lang)
+		def city_id(id, deep: false, lang: nil, hierarchy: false, format: nil, romanized: false)
+			get("/city/id/#{seg(id)}", deep: deep, lang: lang, hierarchy: hierarchy, romanized: romanized, format: format)
 		end
 
-		def city_search(query, country: nil, state: nil, limit: nil, deep: false, lang: nil)
-			get('/city', q: query, country: country, state: state, limit: limit, deep: deep, lang: lang)
+		def city_search(query, country: nil, state: nil, limit: nil, deep: false, lang: nil, type: nil, grain: nil, hierarchy: false, aliases: false, min_population: nil, max_population: nil, timezone: nil, bbox: nil, sort: nil, order: nil, page: false, cursor: nil, format: nil, countries: nil, exclude_countries: nil, timezones: nil, min_elevation: nil, max_elevation: nil, match: nil, max_distance: nil, romanized: false)
+			spelling = !match.nil? || !max_distance.nil?
+			response = get(spelling ? '/city/search' : '/city', q: query, match: match, max_distance: max_distance, country: country, state: state, limit: limit, deep: deep, lang: lang, type: type, grain: grain, hierarchy: hierarchy, aliases: aliases, min_population: min_population, max_population: max_population, timezone: timezone, bbox: bbox, sort: sort, order: order, page: page, cursor: cursor, romanized: romanized, format: format, countries: city_csv(countries), exclude_countries: city_csv(exclude_countries), timezones: city_csv(timezones), min_elevation: min_elevation, max_elevation: max_elevation)
+			if spelling && format.nil?
+				classic = {"q"=>query, "cities"=>response.fetch("data"), "next_cursor"=>response["next_cursor"]}
+				classic["country"] = country unless country.nil?
+				classic["state"] = state unless state.nil?
+				return classic
+			end
+			response
 		end
 
-		def city_nearest(lat, lon, deep: false, lang: nil)
-			get('/city', lat: lat, lon: lon, deep: deep, lang: lang)
+		def city_nearest(lat, lon, deep: false, lang: nil, country: nil, state: nil, type: nil, grain: nil, hierarchy: false, format: nil, romanized: false)
+			get('/city', lat: lat, lon: lon, deep: deep, lang: lang, country: country, state: state, type: type, grain: grain, hierarchy: hierarchy, romanized: romanized, format: format)
 		end
 
-		def city_nearby(name, radius: nil, unit: nil, country: nil, state: nil, limit: nil, deep: false, lang: nil)
-			get("/city/#{seg(name)}/nearby", radius: radius, unit: unit, country: country, state: state, limit: limit, deep: deep, lang: lang)
+		def city_nearby(name, radius: nil, unit: nil, country: nil, state: nil, limit: nil, deep: false, lang: nil, type: nil, grain: nil, hierarchy: false, aliases: false, ambiguity: nil, min_population: nil, max_population: nil, timezone: nil, bbox: nil, sort: nil, order: nil, page: false, cursor: nil, format: nil, countries: nil, exclude_countries: nil, timezones: nil, min_elevation: nil, max_elevation: nil, romanized: false)
+			get("/city/#{seg(name)}/nearby", radius: radius, unit: unit, country: country, state: state, limit: limit, deep: deep, lang: lang, type: type, grain: grain, hierarchy: hierarchy, aliases: aliases, ambiguity: ambiguity, min_population: min_population, max_population: max_population, timezone: timezone, bbox: bbox, sort: sort, order: order, page: page, cursor: cursor, romanized: romanized, format: format, countries: city_csv(countries), exclude_countries: city_csv(exclude_countries), timezones: city_csv(timezones), min_elevation: min_elevation, max_elevation: max_elevation)
 		end
 
 		# Look up a postal area. Pass country when known. Check nullable coordinates before another
 		# location lookup.
+		def city_ancestors(id, hierarchy: false, deep: false, lang: nil, romanized: false)
+			get("/city/id/#{seg(id)}/ancestors", romanized: romanized, hierarchy: hierarchy, deep: deep, lang: lang)
+		end
+
+
+
+
+		def city_children(id, limit: nil, cursor: nil, hierarchy: false, deep: false, lang: nil, romanized: false)
+			get("/city/id/#{seg(id)}/children", limit: limit, cursor: cursor, romanized: romanized, hierarchy: hierarchy, deep: deep, lang: lang)
+		end
+
+
+
+		def city_distance(from, to)
+			get("/city/id/#{seg(from)}/distance/#{seg(to)}")
+		end
+
+
+		def city_list(country: nil, state: nil, limit: nil, deep: false, lang: nil, type: nil, grain: nil, hierarchy: false, min_population: nil, max_population: nil, timezone: nil, bbox: nil, sort: nil, order: nil, cursor: nil, countries: nil, exclude_countries: nil, timezones: nil, min_elevation: nil, max_elevation: nil, romanized: false)
+			get('/city', browse: true, country: country, state: state, limit: limit, deep: deep, lang: lang, type: type, grain: grain, hierarchy: hierarchy, min_population: min_population, max_population: max_population, timezone: timezone, bbox: bbox, sort: sort, order: order, cursor: cursor, romanized: romanized, format: 'list', countries: city_csv(countries), exclude_countries: city_csv(exclude_countries), timezones: city_csv(timezones), min_elevation: min_elevation, max_elevation: max_elevation)
+		end
+
+
+		def city_nearby_coords(lat, lon, radius: nil, unit: nil, country: nil, state: nil, limit: nil, deep: false, lang: nil, type: nil, grain: nil, hierarchy: false, min_population: nil, max_population: nil, timezone: nil, bbox: nil, sort: nil, order: nil, cursor: nil, countries: nil, exclude_countries: nil, timezones: nil, min_elevation: nil, max_elevation: nil, romanized: false)
+			get('/city', lat: lat, lon: lon, nearby: true, radius: radius, unit: unit, country: country, state: state, limit: limit, deep: deep, lang: lang, type: type, grain: grain, hierarchy: hierarchy, min_population: min_population, max_population: max_population, timezone: timezone, bbox: bbox, sort: sort, order: order, cursor: cursor, romanized: romanized, format: 'list', countries: city_csv(countries), exclude_countries: city_csv(exclude_countries), timezones: city_csv(timezones), min_elevation: min_elevation, max_elevation: max_elevation)
+		end
+
+
+		def city_siblings(id, limit: nil, cursor: nil, hierarchy: false, deep: false, lang: nil, romanized: false)
+			get("/city/id/#{seg(id)}/siblings", limit: limit, cursor: cursor, romanized: romanized, hierarchy: hierarchy, deep: deep, lang: lang)
+		end
+
+
 		def postal(code, country: nil, deep: false, lang: nil)
 			get("/postal/#{seg(code)}", country: country, deep: deep, lang: lang)
 		end
@@ -572,6 +613,11 @@ module ParseAPI
 			metered ? 0 : DEFAULT_RETRIES
 		end
 
+		def city_csv(value)
+			value.is_a?(Array) ? value.join(',') : value
+		end
+
+
 		def build_error(status, body, retry_after = nil)
 			parsed = begin
 				JSON.parse(body)
@@ -579,7 +625,7 @@ module ParseAPI
 				{}
 			end
 			parsed = {} unless parsed.is_a?(Hash)
-			Error.new(
+			error = Error.new(
 				status: status,
 				code: parsed['code'].is_a?(String) ? parsed['code'] : 'unknown_error',
 				message: parsed['message'].is_a?(String) ? parsed['message'] : "Request failed with status #{status}",
@@ -587,6 +633,19 @@ module ParseAPI
 				request_id: parsed['request_id'].is_a?(String) ? parsed['request_id'] : nil,
 				retry_after: retry_after
 			)
+			if status == 409 && error.code == 'ambiguous_city' && parsed['candidates'].is_a?(Array)
+				candidates = parsed['candidates'].first(2).map do |row|
+					next unless row.is_a?(Hash) && row['id'].is_a?(String) && /\Acity_[a-z0-9]{12}\z/.match?(row['id']) && row['object'] == 'city'
+					candidate = { 'id' => row['id'], 'object' => 'city' }
+					%w[name name_local country country_name state state_name type].each do |field|
+						value = row[field]
+						candidate[field] = value if row.key?(field) && (value.nil? || (value.is_a?(String) && value.length <= 255))
+					end
+					candidate
+				end.compact
+				error.instance_variable_set(:@candidates, candidates)
+			end
+			error
 		end
 	end
 end

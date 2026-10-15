@@ -243,7 +243,7 @@ place = parse.postal('28202', country: 'US', deep: true)
 property_tax = place.dig('deep', 'property_tax')
 ```
 
-Read `population_period` alongside `population`: a reporting year (`YYYY`) or period (`YYYY-YYYY`), null when unknown or unverifiable. Keep missing or null values unknown and preserve a known zero. These fields belong to full place profiles. State district lists include each district's population and period. Postal nearby and distance detail remains metropolitan associations only. Continent population stays in core.
+Read `population` as the source’s count for that place boundary. Keep missing or null values unknown and preserve a known zero. State district lists include each district’s population. Postal nearby and distance detail remains metropolitan associations only. Continent population stays in core.
 
 Country deep includes `land_area` and `water_area` in km2, `coastline` in km, and mean `elevation` in metres. `lowest_point` and `highest_point` contain a nullable `name` and an `elevation` in metres. Values below sea level are negative. Missing or null values stay unknown, and zero stays zero.
 
@@ -453,3 +453,53 @@ A device's emoji font remains the ordinary display.
 
 These additions are a local release candidate until the matching SDK and
 backend are published. Existing lookup and search contracts are preserved.
+
+
+## City collections
+
+```ruby
+page = parse.city_list(country: 'JP', min_population: 100_000, sort: 'population', limit: 20)
+nearby = parse.city_nearby_coords(34.57, 135.48, radius: 20, unit: 'km', country: 'JP')
+search = parse.city_search('Sak', page: true)
+```
+
+Browse the curated City catalog or list cities around a supplied coordinate. These operations return `next_cursor`, which is null at the end. Treat it as opaque and reuse all filters, limit, language, hierarchy and deep settings for the next page. Existing name searches and named nearby calls include pagination metadata only when paging or a cursor is requested.
+
+Collection options include minimum and maximum population, an exact IANA timezone, and `bbox` in `west,south,east,north` order. A west bound greater than east crosses the dateline. Population filtering and sorting use the same count as paid Deep: an admitted observation when available, otherwise the stored count. Missing counts do not match a population range and sort last; legacy counts keep unknown dates. Coverage and observation dates vary by place.
+
+Collections support `name`, `population`, `country` and `elevation`; search also supports `relevance`, and nearby supports `distance`. Combine up to three signed terms, for example `sort=-population,name`. A signed multi-key sort does not also take `order`. Population defaults to descending order; other sorts default to ascending. Set `order` to `asc` or `desc`, except relevance only supports ascending. Named nearby uses country and state to select the anchor; population, timezone and bounding box filter the returned neighbors. Coordinate nearby applies country and state to its returned cities.
+
+
+
+## Canonical City operations (local source candidate)
+
+These compatible additions are local and unpublished. Classic lookup, search, nearest and named-nearby methods retain their default envelopes and required-field models. Browse and coordinate-nearby use canonical lists: `object`, `data` and nullable `next_cursor` (camelCase properties in Swift/Kotlin). Keep all query options unchanged when continuing a page; no client fetches pages automatically.
+
+```ruby
+page = parse.city_search('Viena', format: 'list', match: 'fuzzy', max_distance: 1)
+children = parse.city_children('city_7aj899nvwyku')
+distance = parse.city_distance('city_7aj899nvwyku', 'city_7aj899nvwyku')
+```
+
+Select `format=resource` for one City or `format=list` for a collection. Country inclusion/exclusion sets, timezone sets, inclusive population and meter-elevation bounds, stored-center `bbox` and signed multi-key sorting are available for collections. Unknown numeric facts do not match range filters.
+
+Search defaults to prefix matching. Exact and fuzzy matching are explicit; fuzzy accepts maximum edit distance 1 or 2 and returns `match` evidence (`type`, `source`, `value`, `language`, `edit_distance`). Review a fuzzy choice before storing its ID.
+
+Reviewed children, ancestors and siblings use canonical lists with partial relationship coverage. Empty data does not prove there are no geographic relatives. Children/siblings accept page controls; ancestors do not. Distance reports great-circle kilometers and miles between stored centers: zero is known zero, null is unknown, and it does not imply travel time or containment.
+
+Strict `ambiguity=error` can return HTTP 409 `ambiguous_city` with up to two safe candidate identities. The existing error constructor and unrelated error metadata are preserved; candidates are retained only for that status/code and never contain Deep. GeoJSON is available through HTTP; these typed City list methods do not return GeoJSON.
+
+
+
+Reviewed name forms:
+
+```ruby
+city = parse.city_id('city_7aj899nvwyku', format: 'resource', romanized: true)
+```
+
+Coverage by country and available fields is described at https://parseapi.com/city#coverage.
+
+`romanized=true` requests reviewed official name forms as `name_romanized` and `romanization_language` (camelCase in Swift/Kotlin). Current reviewed forms cover 20 Japanese whole-city aliases in ja-Latn. Missing or conflicting forms stay null; ASCII folding is not substituted for an official form.
+
+
+Conditional `If-None-Match` reads and GeoJSON currently use HTTP directly. A matching City ETag returns 304 without a body; ordinary billing and rate limits apply. These JSON client methods do not supply conditional-cache handling.
