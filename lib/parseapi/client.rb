@@ -465,8 +465,12 @@ module ParseAPI
 			targets.join(',')
 		end
 
+		def tariff_edition_id?(value)
+            value.is_a?(String) && (/\A[a-f0-9]{64}\z/.match?(value) || (/\Ated_[1-9][0-9]{0,19}\z/.match?(value) && (value.bytesize < 24 || value[4..-1] <= '18446744073709551615')))
+        end
+
 		def tariff_selection(result, edition, date)
-			if (!edition.nil? || !date.nil?) && (!result['edition'].is_a?(String) || !/\A[a-f0-9]{64}\z/.match?(result['edition']) || (!edition.nil? && result['edition'] != edition) || result['date'] != date)
+			if (!edition.nil? || !date.nil?) && (!tariff_edition_id?(result['edition']) || (!edition.nil? && result['edition'] != edition) || result['date'] != date)
 				raise Error.new(status: 0, code: 'tariff_selection_mismatch', message: 'Tariff response did not confirm the requested edition/date. The server may not support this selection.')
 			end
 			result
