@@ -322,14 +322,6 @@ module ParseAPI
 			get('/useragent', { deep: deep }, { 'User-Agent' => ua })
 		end
 
-		def vehicle(vin, deep: false)
-			get("/vehicle/#{seg(vin)}", deep: deep)
-		end
-
-		def vin(vin, deep: false)
-			get("/vin/#{seg(vin)}", deep: deep)
-		end
-
 		# US NAICS 2022 definition and hierarchy.
 		# Compatibility names for Industry.
 		def naics(code, deep: false)

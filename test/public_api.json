@@ -1841,26 +1841,6 @@
         "from"
       ]
     ],
-    "vehicle": [
-      [
-        "req",
-        "vin"
-      ],
-      [
-        "key",
-        "deep"
-      ]
-    ],
-    "vin": [
-      [
-        "req",
-        "vin"
-      ],
-      [
-        "key",
-        "deep"
-      ]
-    ],
     "weather": [
       [
         "req",

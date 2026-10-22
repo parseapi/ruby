@@ -77,8 +77,6 @@ expect('measure_units', ->(r) { r['units'].any? { |unit| unit['unit'] == 'm' } ?
 expect('dns', ->(r) { r['records'].any? { |record| record['type'] == 'A' && record['ttl'].is_a?(Integer) } ? nil : 'no A records' }) { parse.dns('example.com', type: 'A') }
 expect('mx', ->(r) { r['mx'].any? ? nil : 'no mx' }) { parse.mx('gmail.com') }
 expect('useragent', ->(r) { r['browser'] == 'Chrome' ? nil : "browser #{r['browser']}" }) { parse.useragent(UA) }
-expect('vin', ->(r) { r['valid'] == true && r['make'] == 'Honda' && r['year'] == 2003 ? nil : 'wrong decode' }) { parse.vin('1HGCM82633A004352') }
-expect('vin junk', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.vin('1HGCM82613A004352') }
 expect('tariff', ->(r) { r['hts'].is_a?(String) ? nil : 'missing hts' }) { parse.tariff('8471.30.01.00') }
 expect('tariff_search', ->(r) { r['lines'].is_a?(Array) ? nil : 'missing lines' }) { parse.tariff_search('sunglasses') }
 expect('currency', ->(r) { r['symbol'] == '$' ? nil : 'wrong symbol' }) { parse.currency('USD') }
