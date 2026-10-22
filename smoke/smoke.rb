@@ -40,8 +40,6 @@ expect('ip', ->(r) { r['ip'] == '8.8.8.8' ? nil : 'wrong ip' }) { parse.ip('8.8.
 expect('ip_self', ->(r) { r['ip'] ? nil : 'no ip' }) { parse.ip_self }
 expect('continent', ->(r) { r['name'] == 'North America' ? nil : 'wrong name' }) { parse.continent('NA') }
 expect('continent_countries', ->(r) { r['countries'].any? ? nil : 'empty' }) { parse.continent_countries('NA') }
-expect('bloc', ->(r) { r['name'] == 'European Union' && r['members'] == 27 ? nil : 'wrong bloc' }) { parse.bloc('EU') }
-expect('bloc_countries', ->(r) { r['countries']&.length == 29 ? nil : 'wrong members' }) { parse.bloc_countries('SCHENGEN') }
 expect('country', ->(r) { r['iso3'] == 'USA' ? nil : 'wrong iso3' }) { parse.country('US') }
 expect('country_states', ->(r) { r['states'].length >= 50 ? nil : 'too few' }) { parse.country_states('US') }
 expect('state', ->(r) { r['name'] == 'North Carolina' ? nil : 'wrong' }) { parse.state('NC', country: 'US') }
@@ -58,12 +56,9 @@ expect('address', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.addr
 expect('address_search', ->(r) { r['addresses'].is_a?(Array) ? nil : 'missing addresses' }) { parse.address_search('123 main', country: 'US', postal: '27401') }
 expect('company', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.company('732829320', country: 'FR') }
 expect('email', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.email('hello@gmail.com') }
-expect('vat', ->(r) { r['valid'] == true && r['country'] == 'DE' ? nil : 'not valid DE' }) { parse.vat('DE136695976') }
 expect('card', ->(r) { r['bin'] == '000000' ? nil : 'BIN echo mismatch' }) { parse.card('00 0000') }
 expect('bank', ->(r) { r['valid'] == true && r['country'] == 'DE' && r['bank'] == '37040044' ? nil : 'not valid DE' }) { parse.bank('DE89370400440532013000') }
 expect('bank junk', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.bank('hello') }
-expect('npi', ->(r) { r['valid'] == true && r['registered'] == true ? nil : 'not registered' }) { parse.provider('1881018208') }
-expect('npi junk', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.provider('hello') }
 expect('phone', ->(r) { r['phone'] == '+14155552671' ? nil : 'wrong phone' }) { parse.phone('+14155552671') }
 # Metered core siblings: junk numbers answer 200 valid false, free, no vendor dip.
 expect('carrier junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.carrier('555-0100') }
@@ -77,8 +72,6 @@ expect('measure_units', ->(r) { r['units'].any? { |unit| unit['unit'] == 'm' } ?
 expect('dns', ->(r) { r['records'].any? { |record| record['type'] == 'A' && record['ttl'].is_a?(Integer) } ? nil : 'no A records' }) { parse.dns('example.com', type: 'A') }
 expect('mx', ->(r) { r['mx'].any? ? nil : 'no mx' }) { parse.mx('gmail.com') }
 expect('useragent', ->(r) { r['browser'] == 'Chrome' ? nil : "browser #{r['browser']}" }) { parse.useragent(UA) }
-expect('tariff', ->(r) { r['hts'].is_a?(String) ? nil : 'missing hts' }) { parse.tariff('8471.30.01.00') }
-expect('tariff_search', ->(r) { r['lines'].is_a?(Array) ? nil : 'missing lines' }) { parse.tariff_search('sunglasses') }
 expect('currency', ->(r) { r['symbol'] == '$' ? nil : 'wrong symbol' }) { parse.currency('USD') }
 expect('currency_rate', ->(r) { r['rate'].positive? && r['rate'] < 10 ? nil : 'bad rate' }) { parse.currency_rate('USD', 'EUR') }
 expect('language', ->(r) { r['language'] == 'en' && r['name'] == 'English' ? nil : 'wrong language' }) { parse.language('en') }

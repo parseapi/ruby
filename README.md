@@ -42,7 +42,7 @@ Pass `country` when a postal code or national phone number needs disambiguation.
 
 Results are plain data. Pass a returned code or coordinate to another operation when the task needs it. Check nullable values before composing the next call.
 
-Use `parse.postal('28202', country: 'US', deep: true)` for US ZIP tax references. `deep.tax` names the levy and `deep.tax_rate` is a percentage, so `7.9` means 7.9%. The state, county, city and special components explain that combined rate. An exact address can differ. Country and state lookups provide their own geographic reference rates, which should not be added to the ZIP rate. `nil` means unknown and `0` means known zero. Country `deep.tax_id_format` and `deep.tax_id_regex` describe registration-number format only. Use `vat` for a metered registration check with `deep` explicitly enabled.
+Use `parse.postal('28202', country: 'US', deep: true)` for US ZIP tax references. `deep.tax` names the levy and `deep.tax_rate` is a percentage, so `7.9` means 7.9%. The state, county, city and special components explain that combined rate. An exact address can differ. Country and state lookups provide their own geographic reference rates, which should not be added to the ZIP rate. `nil` means unknown and `0` means known zero. Country `deep.tax_id_format` and `deep.tax_id_regex` describe registration-number format only. Use for a metered registration check with `deep` explicitly enabled.
 
 ## Company directory
 
@@ -81,10 +81,8 @@ One method per endpoint, named after the route.
 parse.ip('8.8.8.8')
 parse.ip_self
 parse.email('hello@gmail.com')
-parse.vat('DE136695976')
 parse.bank('DE89370400440532013000')
 parse.card('424242')
-parse.provider('1881018208')
 parse.phone('+14155552671')
 parse.carrier('+14155552671')
 parse.caller('+14155552671')
@@ -114,8 +112,6 @@ parse.state_districts('NC', country: 'US')
 parse.district('37081')
 parse.continent('NA')
 parse.continent_countries('NA')
-parse.bloc('EU')
-parse.bloc_countries('SCHENGEN')
 parse.currency('USD')
 parse.currency_rate('USD', 'EUR')
 parse.language('en')
@@ -143,8 +139,6 @@ parse.dns('_dmarc.example.com', type: 'TXT')
 parse.useragent(ua_string)
 parse.industry('541511')
 parse.industry_search('coffee shop', limit: 5)
-parse.tariff('8471.30.01.00', origin: 'CN', deep: true)
-parse.tariff_search('sunglasses')
 parse.emoji('rocket')
 parse.emoji_search('fire')
 ```
@@ -167,7 +161,7 @@ Choose display names for one request:
 parse.country('DE', lang: 'fr')
 ```
 
-`lang` is optional on geography lookups and their lists/searches, Currency lookup, Language, Date, Time/Timezone, Emoji lookup/search, and unit discovery. IP, ASN, national Company number lookup and NPI also accept it for their geographic labels. Codes, native names, quantities and response structure retain their meanings. Source coverage determines which labels are translated; unavailable labels use the API's documented fallback.
+`lang` is optional on geography lookups and their lists/searches, Currency lookup, Language, Date, Time/Timezone, Emoji lookup/search, and unit discovery. IP, ASN and national Company number lookups also accept it for their geographic labels. Codes, native names, quantities and response structure retain their meanings. Source coverage determines which labels are translated; unavailable labels use the API's documented fallback.
 
 The next call keeps its usual default unless it also supplies `lang`. Existing `deep` rules still apply. Date `format` and measurement `locale` remain explicit input-parsing controls.
 
@@ -254,19 +248,6 @@ Weather returns current conditions by default. Paid deep adds specialist current
 parse.weather(40.7128, -74.006, deep: true, date: '2026-08-15')
 ```
 
-Tariff starts with the general schedule line. Paid deep adds units and the special and other schedule columns. An optional origin then resolves country-specific measures. The three calls below show those successive choices. Without origin, schedule detail is still returned and origin-dependent fields are null. A null effective rate is not a zero rate.
-
-Tariff lookup and search accept the `edition` ID returned by Tariff, such as `ted_3`, and an optional `date` (`YYYY-MM-DD`). The edition pins exact immutable source bytes. A date is accepted only when verified source coverage exists. An edition without a date returns undated schedule context (`date: null`). Default requests use today. Paid detail exposes an open-string `reason` when `effective_rate` is null, including `incomplete_coverage`. A null rate never means zero. Explicit selections fail with `tariff_selection_mismatch` if an older server ignores the requested scope.
-
-Origin means where the goods originate, not where they ship from. The effective rate covers matched stored schedule measures only. It is not complete duty or landed cost.
-
-Codes contain 4, 6, 8 or 10 ASCII digits; dots and whitespace are optional. Search returns up to 20 description matches with parent `lineage` so a result named "Other" has context. Search is not product classification. In deep, `measures: null` means origin-dependent measures were not resolved. `measures: []` means the resolved lookup found none.
-
-```ruby
-parse.tariff('8471.30.01.00')
-parse.tariff('8471.30.01.00', deep: true)
-parse.tariff('8471.30.01.00', deep: true, origin: 'CN')
-```
 
 Address search uses context from the form: prefer postal, or city and state. An optional end-user `ip` is a locality hint for server-side calls. An empty result explains itself with `reason`: `more_input`, `missing_context` or `no_matches`. With suggestions, reason is null. Older responses may omit it, and future reasons remain strings. Catalog and lookup failures use the existing API errors.
 
@@ -283,21 +264,6 @@ parse.bank_requirements('US', format: 'us_ach')
 parse.bank_us_ach(routing: '011000015', account: '0001234567')
 ```
 
-## Provider lookup
-
-```ruby
-provider = parse.provider('1881018208')
-profile = parse.provider('1881018208', deep: true)
-```
-
-Pass the original NPI as a string. `valid` checks its format and checksum; `registered` means a match in the stored NPPES snapshot. `active` reflects recorded NPI deactivation, not licensure. `excluded` is an NPI-only OIG LEIE match; `false` is not a complete exclusion clearance. These directory facts do not verify credentials, current practice contact or payment eligibility.
-
-Invalid input returns `valid: false` with unknown provider fields. A checksum-valid number missing from the snapshot returns `registered: false`; unavailable storage remains an API error. Preserve `null` as unknown.
-
-The default pooled lookup includes provider identity, specialty and practice contact where held. Paid `deep` adds `deactivated_at`, `medicare`, `opt_out` and `enrollments` from stored source files, with no separate check meter or live verification. `enrollments: null` means unavailable; `[]` means no enrollment rows are returned. The API omits unrequested `deep` and returns `{}` when requested on Free.
-
-Paid Deep also returns `taxonomies` in published order, with taxonomy code, specialty label, primary flag and provider-reported license number/state, plus `enumerated_at`, `updated_at` and `reactivated_at` record dates. Reported licenses are not verified licenses. Null lists mean unavailable; empty lists mean the edition contains no entries. Provider record dates describe the provider record. Unknown dates stay null.
-
 ## Deep
 
 Choose enrichment for the question you need answered.
@@ -307,12 +273,10 @@ Choose enrichment for the question you need answered.
 | IP | Richer IP fields included with a paid plan. No separate check meter. |
 | Domain | Registration dates, registrar, status and DNSSEC, included with a paid plan. Use `dns` for DNS records and `mx` for mail routing. |
 | Email | A metered mailbox check with deliverability, catch-all, status, reason and address hints, using included email checks or enabled on-demand usage. |
-| VAT | A metered registry check where supported, using included VAT checks or enabled on-demand usage. |
 | Phone, Time, Date, Currency, Language, Emoji, Bank, Point | Optional detail in the same pooled request on every plan. |
 | Country, State, District, City, Postal | The place profile on paid plans, including demographic and tax facts where held. |
 | Name, Industry | Name evidence or the industry definition profile on paid plans. |
-| NPI | Deactivation date, Medicare enrollment, opt-out and enrollment rows from stored sources on paid plans. Exclusion evidence stays core. |
-| Tariff, Company | The complete product detail bag on paid plans. |
+| Company | The complete product detail bag on paid plans. |
 | Weather | Specialist current measurements and the existing forecast, alert, air and history bag on paid plans. |
 | Carrier, HLR | Optional diagnostic detail within the same metered core unit, including Free allowance units. No second gate or additional check. |
 
@@ -352,7 +316,7 @@ parse = ParseAPI.new(
 )
 ```
 
-Ordinary lookups retry network errors and HTTP 429, 500, 502, 503, and 504 up to twice. Carrier, caller, and HLR lookups, plus email and VAT with `deep: true`, make one attempt by default because repeating them can repeat paid usage. Address with `deep: true` also uses one attempt, reserving that behavior for future verification. This does not mean address deep currently has a separate charge.
+Ordinary lookups retry network errors and HTTP 429, 500, 502, 503, and 504 up to twice. Carrier, caller, and HLR lookups, plus email with `deep: true`, make one attempt by default because repeating them can repeat paid usage. Address with `deep: true` also uses one attempt, reserving that behavior for future verification. This does not mean address deep currently has a separate charge.
 
 Pass `retries: 0` to make every lookup a single attempt. An explicit count such as `retries: 2` applies to every lookup, including paid ones. A retried request can count toward usage even when the first response was lost. Omit `retries` or pass `nil` to use the defaults above.
 
@@ -467,7 +431,6 @@ Collection options include minimum and maximum population, an exact IANA timezon
 Collections support `name`, `population`, `country` and `elevation`; search also supports `relevance`, and nearby supports `distance`. Combine up to three signed terms, for example `sort=-population,name`. A signed multi-key sort does not also take `order`. Population defaults to descending order; other sorts default to ascending. Set `order` to `asc` or `desc`, except relevance only supports ascending. Named nearby uses country and state to select the anchor; population, timezone and bounding box filter the returned neighbors. Coordinate nearby applies country and state to its returned cities.
 
 
-
 ## Canonical City operations
 
 Classic lookup, search, nearest and named-nearby methods retain their default envelopes and required-field models. Browse and coordinate-nearby use canonical lists: `object`, `data` and nullable `next_cursor` (camelCase properties in Swift/Kotlin). Keep all query options unchanged when continuing a page; no client fetches pages automatically.
@@ -485,7 +448,6 @@ Search defaults to prefix matching. Exact and fuzzy matching are explicit; fuzzy
 Reviewed children, ancestors and siblings use canonical lists with partial relationship coverage. Empty data does not prove there are no geographic relatives. Children/siblings accept page controls; ancestors do not. Distance reports great-circle kilometers and miles between stored centers: zero is known zero, null is unknown, and it does not imply travel time or containment.
 
 Strict `ambiguity=error` can return HTTP 409 `ambiguous_city` with up to two safe candidate identities. The existing error constructor and unrelated error metadata are preserved; candidates are retained only for that status/code and never contain Deep. GeoJSON is available through HTTP; these typed City list methods do not return GeoJSON.
-
 
 
 Reviewed name forms:

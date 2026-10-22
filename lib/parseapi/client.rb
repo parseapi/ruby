@@ -78,13 +78,7 @@ module ParseAPI
 			get("/continent/#{seg(code)}/countries", lang: lang)
 		end
 
-		def bloc(code)
-			get("/bloc/#{seg(code)}")
-		end
 
-		def bloc_countries(code, lang: nil)
-			get("/bloc/#{seg(code)}/countries", lang: lang)
-		end
 
 		def country(code, deep: false, lang: nil)
 			get("/country/#{seg(code)}", deep: deep, lang: lang)
@@ -221,12 +215,6 @@ module ParseAPI
 			get("/email/#{seg(email)}", deep: deep)
 		end
 
-		# Check VAT format and checksum. Deep requests a metered registry check where supported. Deep
-		# checks use one attempt by default. Supply your own VAT number for a consultation reference
-		# when supported.
-		def vat(number, country: nil, deep: false, from: nil)
-			get("/vat/#{seg(number)}", country: country, deep: deep, from: from)
-		end
 
 		def iban(iban, country: nil, deep: false)
 			get("/iban/#{seg(iban)}", country: country, deep: deep)
@@ -236,9 +224,6 @@ module ParseAPI
 			get("/bin/#{seg(bin)}", deep: deep)
 		end
 
-		def npi(npi, deep: false, lang: nil)
-			get("/npi/#{seg(npi)}", deep: deep, lang: lang)
-		end
 
 		def bank(iban, country: nil, deep: false)
 			get("/bank", {}, {}, { iban: iban, country: country, deep: deep }.reject { |_key, value| value.nil? })
@@ -261,9 +246,6 @@ module ParseAPI
 			get('/bank/requirements', country: country, format: format)
 		end
 
-		def provider(npi, deep: false, lang: nil)
-			get("/provider/#{seg(npi)}", deep: deep, lang: lang)
-		end
 
 		# Parse a phone number and its formats. Pass country for national numbers when needed. Deep
 		# adds numbering-plan geography on every plan. Carrier, caller, and HLR are separate metered lookups.
@@ -341,17 +323,7 @@ module ParseAPI
 			get('/industry', q: query, limit: limit, deep: deep)
 		end
 
-		# Look up the general US duty schedule line. Paid deep adds units and the special and other
-		# schedule columns. Add origin with deep to resolve country-specific measures. Without origin,
-		# schedule detail remains available and origin-dependent fields are null. A null effective rate
-		# is not a zero rate.
-		def tariff(code, deep: false, origin: nil, edition: nil, date: nil)
-			tariff_selection(get("/tariff/#{seg(code)}", deep: deep, origin: origin, edition: edition, date: date), edition, date)
-		end
 
-		def tariff_search(query, edition: nil, date: nil)
-			tariff_selection(get('/tariff', q: query, edition: edition, date: date), edition, date)
-		end
 
 		def currency(code, deep: false, lang: nil)
 			get("/currency/#{seg(code)}", deep: deep, lang: lang)
@@ -498,16 +470,7 @@ module ParseAPI
 			targets.join(',')
 		end
 
-		def tariff_edition_id?(value)
-            value.is_a?(String) && (/\A[a-f0-9]{64}\z/.match?(value) || (/\Ated_[1-9][0-9]{0,19}\z/.match?(value) && (value.bytesize < 24 || value[4..-1] <= '18446744073709551615')))
-        end
 
-		def tariff_selection(result, edition, date)
-			if (!edition.nil? || !date.nil?) && (!tariff_edition_id?(result['edition']) || (!edition.nil? && result['edition'] != edition) || result['date'] != date)
-				raise Error.new(status: 0, code: 'tariff_selection_mismatch', message: 'Tariff response did not confirm the requested edition/date. The server may not support this selection.')
-			end
-			result
-		end
 
 
 		def seg(value)

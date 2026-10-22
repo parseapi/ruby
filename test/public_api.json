@@ -104,22 +104,6 @@
         "deep"
       ]
     ],
-    "bloc": [
-      [
-        "req",
-        "code"
-      ]
-    ],
-    "bloc_countries": [
-      [
-        "req",
-        "code"
-      ],
-      [
-        "key",
-        "lang"
-      ]
-    ],
     "caller": [
       [
         "req",
@@ -780,7 +764,9 @@
         "romanized"
       ]
     ],
-    "close": [],
+    "close": [
+
+    ],
     "company": [
       [
         "req",
@@ -799,7 +785,9 @@
         "lang"
       ]
     ],
-    "company_coverage": [],
+    "company_coverage": [
+
+    ],
     "company_id": [
       [
         "req",
@@ -1124,7 +1112,9 @@
         "profile"
       ]
     ],
-    "emoji_categories": [],
+    "emoji_categories": [
+
+    ],
     "emoji_convert": [
       [
         "req",
@@ -1139,7 +1129,9 @@
         "shortcode_source"
       ]
     ],
-    "emoji_metadata": [],
+    "emoji_metadata": [
+
+    ],
     "emoji_parse": [
       [
         "req",
@@ -1290,7 +1282,9 @@
         "transport"
       ]
     ],
-    "inspect": [],
+    "inspect": [
+
+    ],
     "ip": [
       [
         "req",
@@ -1419,20 +1413,6 @@
         "name_locale"
       ]
     ],
-    "npi": [
-      [
-        "req",
-        "npi"
-      ],
-      [
-        "key",
-        "deep"
-      ],
-      [
-        "key",
-        "lang"
-      ]
-    ],
     "phone": [
       [
         "req",
@@ -1531,20 +1511,6 @@
         "lang"
       ]
     ],
-    "provider": [
-      [
-        "req",
-        "npi"
-      ],
-      [
-        "key",
-        "deep"
-      ],
-      [
-        "key",
-        "lang"
-      ]
-    ],
     "stack": [
       [
         "req",
@@ -1593,42 +1559,6 @@
       [
         "key",
         "lang"
-      ]
-    ],
-    "tariff": [
-      [
-        "req",
-        "code"
-      ],
-      [
-        "key",
-        "deep"
-      ],
-      [
-        "key",
-        "origin"
-      ],
-      [
-        "key",
-        "edition"
-      ],
-      [
-        "key",
-        "date"
-      ]
-    ],
-    "tariff_search": [
-      [
-        "req",
-        "query"
-      ],
-      [
-        "key",
-        "edition"
-      ],
-      [
-        "key",
-        "date"
       ]
     ],
     "time": [
@@ -1823,24 +1753,6 @@
         "deep"
       ]
     ],
-    "vat": [
-      [
-        "req",
-        "number"
-      ],
-      [
-        "key",
-        "country"
-      ],
-      [
-        "key",
-        "deep"
-      ],
-      [
-        "key",
-        "from"
-      ]
-    ],
     "weather": [
       [
         "req",
@@ -1861,9 +1773,15 @@
     ]
   },
   "ParseAPI::Error": {
-    "candidates": [],
-    "code": [],
-    "docs": [],
+    "candidates": [
+
+    ],
+    "code": [
+
+    ],
+    "docs": [
+
+    ],
     "initialize": [
       [
         "keyreq",
@@ -1890,8 +1808,14 @@
         "retry_after"
       ]
     ],
-    "request_id": [],
-    "retry_after": [],
-    "status": []
+    "request_id": [
+
+    ],
+    "retry_after": [
+
+    ],
+    "status": [
+
+    ]
   }
 }

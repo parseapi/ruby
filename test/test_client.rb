@@ -219,8 +219,6 @@ class TestUrlMapping < Minitest::Test
 		'ip deep' => [->(p) { p.ip('8.8.8.8', deep: true) }, 'https://api.parseapi.com/ip/8.8.8.8?deep=true'],
 		'continent' => [->(p) { p.continent('NA') }, 'https://api.parseapi.com/continent/NA'],
 		'continent_countries' => [->(p) { p.continent_countries('NA') }, 'https://api.parseapi.com/continent/NA/countries'],
-		'bloc' => [->(p) { p.bloc('EU') }, 'https://api.parseapi.com/bloc/EU'],
-		'bloc_countries' => [->(p) { p.bloc_countries('SCHENGEN') }, 'https://api.parseapi.com/bloc/SCHENGEN/countries'],
 		'country' => [->(p) { p.country('US') }, 'https://api.parseapi.com/country/US'],
 		'country_states' => [->(p) { p.country_states('US') }, 'https://api.parseapi.com/country/US/states'],
 		'state' => [->(p) { p.state('NC', country: 'US') }, 'https://api.parseapi.com/state/NC?country=US'],
@@ -240,12 +238,8 @@ class TestUrlMapping < Minitest::Test
 		'address_search' => [->(p) { p.address_search('123 main', country: 'US', postal: '27401', city: 'Greensboro', state: 'NC', ip: '8.8.8.8') }, 'https://api.parseapi.com/address?q=123+main&country=US&postal=27401&city=Greensboro&state=NC&ip=8.8.8.8'],
 		'company' => [->(p) { p.company('732829320', country: 'FR', deep: true) }, 'https://api.parseapi.com/company/732829320?country=FR&deep=true'],
 		'email' => [->(p) { p.email('a@b.com') }, 'https://api.parseapi.com/email/a%40b.com'],
-		'vat' => [->(p) { p.vat('DE136695976') }, 'https://api.parseapi.com/vat/DE136695976'],
 		'bank' => [->(p) { p.bank('DE89370400440532013000') }, 'https://api.parseapi.com/bank'],
 		'bank country' => [->(p) { p.bank('89370400440532013000', country: 'DE') }, 'https://api.parseapi.com/bank'],
-		'npi' => [->(p) { p.provider('1881018208') }, 'https://api.parseapi.com/provider/1881018208'],
-		'npi deep' => [->(p) { p.provider('1881018208', deep: true) }, 'https://api.parseapi.com/provider/1881018208?deep=true'],
-		'vat from deep' => [->(p) { p.vat('DE136695976', from: 'IE6388047V', deep: true) }, 'https://api.parseapi.com/vat/DE136695976?deep=true&from=IE6388047V'],
 		'phone encodes plus' => [->(p) { p.phone('+14155552671', deep: true) }, 'https://api.parseapi.com/phone/%2B14155552671?deep=true'],
 		'carrier encodes plus' => [->(p) { p.carrier('+14155552671') }, 'https://api.parseapi.com/carrier/%2B14155552671'],
 		'caller with country' => [->(p) { p.caller('4155552671', country: 'US') }, 'https://api.parseapi.com/caller/4155552671?country=US'],
@@ -255,8 +249,6 @@ class TestUrlMapping < Minitest::Test
 		'mac' => [->(p) { p.mac('00:1B:63:84:45:E6') }, 'https://api.parseapi.com/mac/00%3A1B%3A63%3A84%3A45%3AE6'],
 		'mx' => [->(p) { p.mx('example.com') }, 'https://api.parseapi.com/mx/example.com'],
 		'useragent' => [->(p) { p.useragent('TestUA/1.0') }, 'https://api.parseapi.com/useragent'],
-		'tariff' => [->(p) { p.tariff('8471.30.01.00', deep: true, origin: 'CN') }, 'https://api.parseapi.com/tariff/8471.30.01.00?deep=true&origin=CN'],
-		'tariff_search' => [->(p) { p.tariff_search('sunglasses') }, 'https://api.parseapi.com/tariff?q=sunglasses'],
 		'currency' => [->(p) { p.currency('USD') }, 'https://api.parseapi.com/currency/USD'],
 		'currency_rate' => [->(p) { p.currency_rate('USD', 'EUR') }, 'https://api.parseapi.com/currency/USD/EUR'],
 		'currency_rate date amount' => [->(p) { p.currency_rate('USD', 'JPY', date: '2026-08-28', amount: 100) }, 'https://api.parseapi.com/currency/USD/JPY?date=2026-08-28&amount=100'],
@@ -455,8 +447,6 @@ class TestUrlMapping < Minitest::Test
 		'country' => [->(p) { p.country('US') }, 3],
 		'email core' => [->(p) { p.email('hello@example.com') }, 3],
 		'email deep' => [->(p) { p.email('hello@example.com', deep: true) }, 1],
-		'vat core' => [->(p) { p.vat('DE136695976') }, 3],
-		'vat deep' => [->(p) { p.vat('DE136695976', deep: true) }, 1],
 		'carrier' => [->(p) { p.carrier('+14155552671') }, 1],
 		'caller' => [->(p) { p.caller('+14155552671') }, 1],
 		'hlr' => [->(p) { p.hlr('+447712345678') }, 1],
@@ -572,7 +562,7 @@ end
 
 
 class TestLanguageOptions < Minitest::Test
-  OPERATIONS = JSON.parse(%q@[["ip", ["8.8.8.8"], {"deep": true}], ["ip.self", [], {"deep": true}], ["continent", ["EU"], {}], ["continent.countries", ["EU"], {}], ["bloc.countries", ["EU"], {}], ["country", ["DE"], {"deep": true}], ["country.states", ["DE"], {}], ["state", ["CA"], {"country": "US"}], ["state.districts", ["CA"], {"country": "US", "deep": true}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["München"], {"country": "DE"}], ["city.id", ["city_fixture"], {"deep": true}], ["city.search", ["Mün"], {"limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["München"], {"radius": 0, "unit": "km"}], ["postal", ["SW1A 1AA"], {"country": "GB"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["company", ["732829320"], {"country": "FR", "deep": true}], ["provider", ["1881018208"], {"deep": true}], ["asn", ["AS13335"], {}], ["currency", ["USD"], {"deep": true}], ["language", ["ja"], {}], ["time", ["America/New_York"], {"at": "2026-01-01T12:00", "to": "UTC", "deep": true}], ["time.at", [0, 0], {"at": "2026-01-01T12:00Z"}], ["timezone", ["UTC"], {"deep": true}], ["timezone.at", [0, 0], {"deep": true}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-05-01", "deep": true}], ["date.today", [], {"to": "2026-05-01"}], ["point", [0, 0], {"deep": true}], ["emoji", ["😀"], {"deep": true}], ["emoji.search", ["visage"], {"limit": 2}], ["measure.units", [], {"query": "meter", "unit": "m"}]]@).freeze
+  OPERATIONS = JSON.parse(%q@[["ip", ["8.8.8.8"], {"deep": true}], ["ip.self", [], {"deep": true}], ["continent", ["EU"], {}], ["continent.countries", ["EU"], {}], ["country", ["DE"], {"deep": true}], ["country.states", ["DE"], {}], ["state", ["CA"], {"country": "US"}], ["state.districts", ["CA"], {"country": "US", "deep": true}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["München"], {"country": "DE"}], ["city.id", ["city_fixture"], {"deep": true}], ["city.search", ["Mün"], {"limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["München"], {"radius": 0, "unit": "km"}], ["postal", ["SW1A 1AA"], {"country": "GB"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["company", ["732829320"], {"country": "FR", "deep": true}], ["asn", ["AS13335"], {}], ["currency", ["USD"], {"deep": true}], ["language", ["ja"], {}], ["time", ["America/New_York"], {"at": "2026-01-01T12:00", "to": "UTC", "deep": true}], ["time.at", [0, 0], {"at": "2026-01-01T12:00Z"}], ["timezone", ["UTC"], {"deep": true}], ["timezone.at", [0, 0], {"deep": true}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-05-01", "deep": true}], ["date.today", [], {"to": "2026-05-01"}], ["point", [0, 0], {"deep": true}], ["emoji", ["😀"], {"deep": true}], ["emoji.search", ["visage"], {"limit": 2}], ["measure.units", [], {"query": "meter", "unit": "m"}]]@).freeze
 
   def test_display_language_is_per_request_and_preserves_existing_queries
     OPERATIONS.each do |name, args, options|
@@ -600,7 +590,7 @@ class TestLanguageOptions < Minitest::Test
     query = URI.decode_www_form(URI(client.calls[1][:url]).query).to_h
     assert_equal 'de-DE', query['locale']
     refute query.key?('lang')
-    %i[bloc currency_rate measure holiday name email phone address].each do |method|
+    %i[currency_rate measure holiday name email phone address].each do |method|
       refute ParseAPI::Client.instance_method(method).parameters.any? { |_, name| name == :lang }, method
     end
   end
