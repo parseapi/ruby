@@ -60,40 +60,6 @@
         "lang"
       ]
     ],
-    "bank": [
-      [
-        "req",
-        "iban"
-      ],
-      [
-        "key",
-        "country"
-      ],
-      [
-        "key",
-        "deep"
-      ]
-    ],
-    "bank_requirements": [
-      [
-        "req",
-        "country"
-      ],
-      [
-        "key",
-        "format"
-      ]
-    ],
-    "bank_us_ach": [
-      [
-        "keyreq",
-        "routing"
-      ],
-      [
-        "keyreq",
-        "account"
-      ]
-    ],
     "bin": [
       [
         "req",
@@ -1220,20 +1186,6 @@
       [
         "req",
         "date"
-      ]
-    ],
-    "iban": [
-      [
-        "req",
-        "iban"
-      ],
-      [
-        "key",
-        "country"
-      ],
-      [
-        "key",
-        "deep"
       ]
     ],
     "industry": [

@@ -57,8 +57,6 @@ expect('address_search', ->(r) { r['addresses'].is_a?(Array) ? nil : 'missing ad
 expect('company', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.company('732829320', country: 'FR') }
 expect('email', ->(r) { r['valid'] == true ? nil : 'not valid' }) { parse.email('hello@gmail.com') }
 expect('card', ->(r) { r['bin'] == '000000' ? nil : 'BIN echo mismatch' }) { parse.card('00 0000') }
-expect('bank', ->(r) { r['valid'] == true && r['country'] == 'DE' && r['bank'] == '37040044' ? nil : 'not valid DE' }) { parse.bank('DE89370400440532013000') }
-expect('bank junk', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.bank('hello') }
 expect('phone', ->(r) { r['phone'] == '+14155552671' ? nil : 'wrong phone' }) { parse.phone('+14155552671') }
 # Metered core siblings: junk numbers answer 200 valid false, free, no vendor dip.
 expect('carrier junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.carrier('555-0100') }

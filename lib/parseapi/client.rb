@@ -216,18 +216,12 @@ module ParseAPI
 		end
 
 
-		def iban(iban, country: nil, deep: false)
-			get("/iban/#{seg(iban)}", country: country, deep: deep)
-		end
 
 		def bin(bin, deep: false)
 			get("/bin/#{seg(bin)}", deep: deep)
 		end
 
 
-		def bank(iban, country: nil, deep: false)
-			get("/bank", {}, {}, { iban: iban, country: country, deep: deep }.reject { |_key, value| value.nil? })
-		end
 
 		# Look up a 2-11 digit card prefix, preserving leading zeros.
 		def card(bin, deep: false)
@@ -236,15 +230,7 @@ module ParseAPI
 		end
 
 
-		# US routing/account syntax only; not account or ACH eligibility verification.
-		def bank_us_ach(routing:, account:)
-			get('/bank', {}, {}, { format: 'us_ach', country: 'US', routing: routing, account: account })
-		end
 
-		# Describe accepted fields and check scope, not directory completeness.
-		def bank_requirements(country, format: nil)
-			get('/bank/requirements', country: country, format: format)
-		end
 
 
 		# Parse a phone number and its formats. Pass country for national numbers when needed. Deep
