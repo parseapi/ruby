@@ -177,10 +177,6 @@ class TestUrlMapping < Minitest::Test
 		'industry_search' => [->(p) { p.industry_search('coffee & tea', limit: 5) }, 'https://api.parseapi.com/industry?q=coffee+%26+tea&limit=5'],
 		'industry_search default' => [->(p) { p.industry_search('plumbing') }, 'https://api.parseapi.com/industry?q=plumbing'],
 		'name country' => [->(p) { p.name('Andrea / Smith', country: 'IT') }, 'https://api.parseapi.com/name/Andrea%20%2F%20Smith?country=IT'],
-		'measure' => [->(p) { p.measure('5 ft 11 in', to: 'cm', locale: 'en-US', system: 'us') }, 'https://api.parseapi.com/measure/5%20ft%2011%20in?to=cm&locale=en-US&system=us'],
-		'measure compound' => [->(p) { p.measure('1 kg/m^3', to: 'g/L') }, 'https://api.parseapi.com/measure/1%20kg%2Fm%5E3?to=g%2FL'],
-		'measure_units' => [->(p) { p.measure_units(query: 'US gallon', type: 'volume', unit: 'L') }, 'https://api.parseapi.com/measure/units?q=US+gallon&type=volume&unit=L'],
-		'measure_units all' => [->(p) { p.measure_units }, 'https://api.parseapi.com/measure/units'],
 		'ip' => [->(p) { p.ip('8.8.8.8') }, 'https://api.parseapi.com/ip/8.8.8.8'],
 		'ip_self' => [->(p) { p.ip_self }, 'https://api.parseapi.com/ip'],
 		'ip deep' => [->(p) { p.ip('8.8.8.8', deep: true) }, 'https://api.parseapi.com/ip/8.8.8.8?deep=true'],
@@ -211,12 +207,8 @@ class TestUrlMapping < Minitest::Test
 		'hlr' => [->(p) { p.hlr('+447712345678') }, 'https://api.parseapi.com/hlr/%2B447712345678'],
 		'domain' => [->(p) { p.domain('example.com') }, 'https://api.parseapi.com/domain/example.com'],
 		'asn' => [->(p) { p.asn('AS13335') }, 'https://api.parseapi.com/asn/AS13335'],
-		'mac' => [->(p) { p.mac('00:1B:63:84:45:E6') }, 'https://api.parseapi.com/mac/00%3A1B%3A63%3A84%3A45%3AE6'],
 		'mx' => [->(p) { p.mx('example.com') }, 'https://api.parseapi.com/mx/example.com'],
 		'useragent' => [->(p) { p.useragent('TestUA/1.0') }, 'https://api.parseapi.com/useragent'],
-		'currency' => [->(p) { p.currency('USD') }, 'https://api.parseapi.com/currency/USD'],
-		'currency_rate' => [->(p) { p.currency_rate('USD', 'EUR') }, 'https://api.parseapi.com/currency/USD/EUR'],
-		'currency_rate date amount' => [->(p) { p.currency_rate('USD', 'JPY', date: '2026-08-28', amount: 100) }, 'https://api.parseapi.com/currency/USD/JPY?date=2026-08-28&amount=100'],
 		'language' => [->(p) { p.language('en') }, 'https://api.parseapi.com/language/en'],
 		'name encodes spaces' => [->(p) { p.name('Smith, John') }, 'https://api.parseapi.com/name/Smith%2C%20John'],
 		'time compatible' => [->(p) { p.time('America/New_York', at: '2026-11-01T01:30:00', to: 'UTC', disambiguation: 'compatible') }, 'https://api.parseapi.com/time/America%2FNew_York?at=2026-11-01T01%3A30%3A00&to=UTC&disambiguation=compatible'],
@@ -450,24 +442,6 @@ class TestUrlMapping < Minitest::Test
 	end
 end
 
-class TestMeasure < Minitest::Test
-	def test_decimal_and_ambiguity_are_plain_data
-		[
-			{ 'measure' => '0 m', 'valid' => true, 'type' => 'future-type', 'amount' => '0', 'unit' => 'm', 'reason' => nil, 'choices' => [], 'future' => nil },
-			{ 'measure' => '1 gallon', 'valid' => false, 'type' => nil, 'amount' => nil, 'unit' => nil, 'reason' => 'ambiguous_unit', 'choices' => [{ 'unit' => 'us_gal', 'name' => 'US liquid gallon' }] }
-		].each do |body|
-			client = StubClient.new('test_key', retries: 0, responses: [[200, {}, JSON.generate(body)]])
-			assert_equal body, client.measure(body['measure'])
-		end
-	end
-
-	def test_bad_target_preserves_api_error
-		client = StubClient.new('test_key', responses: [[400, {}, '{"code":"bad_request","message":"Incompatible units","request_id":"req_measure"}']])
-		error = assert_raises(ParseAPI::Error) { client.measure('1 m', to: 'kg') }
-		assert_equal 'bad_request', error.code
-		assert_equal 1, client.calls.length
-	end
-end
 
 
 class TestNAICSEvidence < Minitest::Test
@@ -484,7 +458,7 @@ end
 
 
 class TestADP < Minitest::Test
- CASES = JSON.parse('[["country", ["US"], {}], ["state", ["NC"], {"country": "US"}], ["state.districts", ["NC"], {"country": "US"}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["Charlotte"], {"country": "US", "state": "NC"}], ["city.id", ["city_test"], {}], ["city.search", ["Charlotte"], {"country": "US", "state": "NC", "limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["Charlotte"], {"radius": 0, "unit": "km", "country": "US", "state": "NC", "limit": 2}], ["postal", ["28202"], {"country": "US"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0, "unit": "km"}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["carrier", ["+14155552671"], {"country": "US"}], ["hlr", ["+447712345678"], {"country": "GB"}], ["naics", ["31-33"], {}], ["naics.search", ["coffee"], {"limit": 2}], ["currency", ["USD"], {}], ["language", ["ar"], {}], ["name", ["Andrea"], {"country": "IT"}], ["time", [], {"at": "2026-09-08", "to": "UTC"}], ["time.at", [0, 0], {"at": "2026-09-08", "to": "UTC"}], ["timezone", ["UTC"], {"at": "2026-09-08", "to": "UTC"}], ["timezone.at", [0, 0], {"at": "2026-09-08"}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-09-08"}], ["date.today", [], {"to": "2026-09-08"}], ["emoji", ["fire"], {}], ["emoji.search", ["fire"], {"limit": 2}]]')
+ CASES = JSON.parse('[["country", ["US"], {}], ["state", ["NC"], {"country": "US"}], ["state.districts", ["NC"], {"country": "US"}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["Charlotte"], {"country": "US", "state": "NC"}], ["city.id", ["city_test"], {}], ["city.search", ["Charlotte"], {"country": "US", "state": "NC", "limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["Charlotte"], {"radius": 0, "unit": "km", "country": "US", "state": "NC", "limit": 2}], ["postal", ["28202"], {"country": "US"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0, "unit": "km"}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["carrier", ["+14155552671"], {"country": "US"}], ["hlr", ["+447712345678"], {"country": "GB"}], ["naics", ["31-33"], {}], ["naics.search", ["coffee"], {"limit": 2}], ["language", ["ar"], {}], ["name", ["Andrea"], {"country": "IT"}], ["time", [], {"at": "2026-09-08", "to": "UTC"}], ["time.at", [0, 0], {"at": "2026-09-08", "to": "UTC"}], ["timezone", ["UTC"], {"at": "2026-09-08", "to": "UTC"}], ["timezone.at", [0, 0], {"at": "2026-09-08"}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-09-08"}], ["date.today", [], {"to": "2026-09-08"}], ["emoji", ["fire"], {}], ["emoji.search", ["fire"], {"limit": 2}]]')
  CASES.each do |method, args, options|
   define_method("test_deep_#{method}") do
    data = { 'deep' => { 'zero' => 0, 'missing' => nil, 'empty' => [], 'future' => true } }
@@ -527,7 +501,7 @@ end
 
 
 class TestLanguageOptions < Minitest::Test
-  OPERATIONS = JSON.parse(%q@[["ip", ["8.8.8.8"], {"deep": true}], ["ip.self", [], {"deep": true}], ["continent", ["EU"], {}], ["continent.countries", ["EU"], {}], ["country", ["DE"], {"deep": true}], ["country.states", ["DE"], {}], ["state", ["CA"], {"country": "US"}], ["state.districts", ["CA"], {"country": "US", "deep": true}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["München"], {"country": "DE"}], ["city.id", ["city_fixture"], {"deep": true}], ["city.search", ["Mün"], {"limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["München"], {"radius": 0, "unit": "km"}], ["postal", ["SW1A 1AA"], {"country": "GB"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["company", ["732829320"], {"country": "FR", "deep": true}], ["asn", ["AS13335"], {}], ["currency", ["USD"], {"deep": true}], ["language", ["ja"], {}], ["time", ["America/New_York"], {"at": "2026-01-01T12:00", "to": "UTC", "deep": true}], ["time.at", [0, 0], {"at": "2026-01-01T12:00Z"}], ["timezone", ["UTC"], {"deep": true}], ["timezone.at", [0, 0], {"deep": true}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-05-01", "deep": true}], ["date.today", [], {"to": "2026-05-01"}], ["point", [0, 0], {"deep": true}], ["emoji", ["😀"], {"deep": true}], ["emoji.search", ["visage"], {"limit": 2}], ["measure.units", [], {"query": "meter", "unit": "m"}]]@).freeze
+  OPERATIONS = JSON.parse(%q@[["ip", ["8.8.8.8"], {"deep": true}], ["ip.self", [], {"deep": true}], ["continent", ["EU"], {}], ["continent.countries", ["EU"], {}], ["country", ["DE"], {"deep": true}], ["country.states", ["DE"], {}], ["state", ["CA"], {"country": "US"}], ["state.districts", ["CA"], {"country": "US", "deep": true}], ["district", ["37081"], {"country": "US", "state": "NC"}], ["city", ["München"], {"country": "DE"}], ["city.id", ["city_fixture"], {"deep": true}], ["city.search", ["Mün"], {"limit": 2}], ["city.nearest", [0, 0], {}], ["city.nearby", ["München"], {"radius": 0, "unit": "km"}], ["postal", ["SW1A 1AA"], {"country": "GB"}], ["postal.nearby", ["28202"], {"country": "US", "radius": 0}], ["postal.distance", ["28202", "10001"], {"country": "US"}], ["company", ["732829320"], {"country": "FR", "deep": true}], ["asn", ["AS13335"], {}], ["language", ["ja"], {}], ["time", ["America/New_York"], {"at": "2026-01-01T12:00", "to": "UTC", "deep": true}], ["time.at", [0, 0], {"at": "2026-01-01T12:00Z"}], ["timezone", ["UTC"], {"deep": true}], ["timezone.at", [0, 0], {"deep": true}], ["date", ["03/04/2026"], {"format": "dmy", "to": "2026-05-01", "deep": true}], ["date.today", [], {"to": "2026-05-01"}], ["point", [0, 0], {"deep": true}], ["emoji", ["😀"], {"deep": true}], ["emoji.search", ["visage"], {"limit": 2}]]@).freeze
 
   def test_display_language_is_per_request_and_preserves_existing_queries
     OPERATIONS.each do |name, args, options|
@@ -550,12 +524,8 @@ class TestLanguageOptions < Minitest::Test
     body = { 'name' => 'Nom traduit', 'name_local' => 'Native name', 'future' => nil }
     client = StubClient.new('fixture', responses: [[200, {}, JSON.generate(body)], [200, {}, '{}']])
     assert_equal body, client.date('03/04/2026', format: 'dmy', lang: 'en-US')
-    client.measure('1,5 m', locale: 'de-DE', to: 'cm')
     assert_equal 'dmy', URI.decode_www_form(URI(client.calls[0][:url]).query).to_h['format']
-    query = URI.decode_www_form(URI(client.calls[1][:url]).query).to_h
-    assert_equal 'de-DE', query['locale']
-    refute query.key?('lang')
-    %i[currency_rate measure holiday name email phone address].each do |method|
+    %i[holiday name email phone address].each do |method|
       refute ParseAPI::Client.instance_method(method).parameters.any? { |_, name| name == :lang }, method
     end
   end

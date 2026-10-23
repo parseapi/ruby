@@ -227,13 +227,7 @@ module ParseAPI
 		def card(bin, deep: false)
 			raise ArgumentError, 'parseapi: Card requires a 2-11 digit prefix string.' unless bin.is_a?(String) && bin.length <= 64 && /\A[0-9]{2,11}\z/.match?(bin.delete(" \t\r\n-"))
 			get("/card/#{seg(bin)}", deep: deep)
-		end
-
-
-
-
-
-		# Parse a phone number and its formats. Pass country for national numbers when needed. Deep
+		end		# Parse a phone number and its formats. Pass country for national numbers when needed. Deep
 		# adds numbering-plan geography on every plan. Carrier, caller, and HLR are separate metered lookups.
 		def phone(number, country: nil, deep: false)
 			get("/phone/#{seg(number)}", country: country, deep: deep)
@@ -272,10 +266,6 @@ module ParseAPI
 			get("/asn/#{seg(asn)}", lang: lang)
 		end
 
-		def mac(mac)
-			get("/mac/#{seg(mac)}")
-		end
-
 		# Published DNS records with TTLs. Omit type to check all supported types.
 		# Type selects the question, including its CNAME chain. Pooled on every plan.
 		def dns(domain, type: nil)
@@ -310,14 +300,6 @@ module ParseAPI
 		end
 
 
-
-		def currency(code, deep: false, lang: nil)
-			get("/currency/#{seg(code)}", deep: deep, lang: lang)
-		end
-
-		def currency_rate(base, quote, date: nil, amount: nil)
-			get("/currency/#{seg(base)}/#{seg(quote)}", date: date, amount: amount)
-		end
 
 		def language(code, deep: false, lang: nil)
 			get("/language/#{seg(code)}", deep: deep, lang: lang)
@@ -419,20 +401,6 @@ module ParseAPI
 			get('/emoji/convert', {direction: direction, shortcode_source: shortcode_source}, {}, {text: text})
 		end
 
-
-
-
-		# Parse or convert a measurement. Amount is a decimal string. Without to, use the
-		# type's canonical unit. Locale and system (us or imperial) resolve explicit ambiguity.
-		# Successful JSON omits reason and choices. Invalid input adds reason and alternatives add choices.
-		def measure(measure, to: nil, locale: nil, system: nil)
-			get("/measure/#{seg(measure)}", to: to, locale: locale, system: system)
-		end
-
-		# Discover reviewed units. unit filters compatible conversion targets.
-		def measure_units(query: nil, type: nil, unit: nil, lang: nil)
-			get('/measure/units', q: query, type: type, unit: unit, lang: lang)
-		end
 
 		private
 

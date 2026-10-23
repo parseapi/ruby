@@ -64,14 +64,9 @@ expect('caller junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid
 expect('hlr junk free', ->(r) { r['valid'] == false ? nil : 'expected invalid' }) { parse.hlr('555-0100') }
 expect('domain', ->(r) { r['available'] == false ? nil : 'gmail available?' }) { parse.domain('gmail.com') }
 expect('asn', ->(r) { r['asn'] == 13335 ? nil : 'wrong ASN' }) { parse.asn('AS13335') }
-expect('mac', ->(r) { r['valid'] && r['mac'] == '00:1B:63:84:45:E6' && r['local'] == false && r['multicast'] == false ? nil : 'wrong MAC' }) { parse.mac('00:1B:63:84:45:E6') }
-expect('measure', ->(r) { r['valid'] && r['amount'] == '180.34' && r['unit'] == 'cm' ? nil : 'wrong conversion' }) { parse.measure('5 ft 11 in', to: 'cm') }
-expect('measure_units', ->(r) { r['units'].any? { |unit| unit['unit'] == 'm' } ? nil : 'missing metre' }) { parse.measure_units(unit: 'm') }
 expect('dns', ->(r) { r['records'].any? { |record| record['type'] == 'A' && record['ttl'].is_a?(Integer) } ? nil : 'no A records' }) { parse.dns('example.com', type: 'A') }
 expect('mx', ->(r) { r['mx'].any? ? nil : 'no mx' }) { parse.mx('gmail.com') }
 expect('useragent', ->(r) { r['browser'] == 'Chrome' ? nil : "browser #{r['browser']}" }) { parse.useragent(UA) }
-expect('currency', ->(r) { r['symbol'] == '$' ? nil : 'wrong symbol' }) { parse.currency('USD') }
-expect('currency_rate', ->(r) { r['rate'].positive? && r['rate'] < 10 ? nil : 'bad rate' }) { parse.currency_rate('USD', 'EUR') }
 expect('language', ->(r) { r['language'] == 'en' && r['name'] == 'English' ? nil : 'wrong language' }) { parse.language('en') }
 expect('name', ->(r) { r['name'] == "Billy O'Shall" && r['valid'] == true ? nil : 'wrong name' }) { parse.name("BILLY O'SHALL") }
 expect('timezone', ->(r) { ['-04:00', '-05:00'].include?(r['offset']) ? nil : "offset #{r['offset']}" }) { parse.timezone('America/New_York') }

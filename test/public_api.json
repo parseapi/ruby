@@ -730,9 +730,7 @@
         "romanized"
       ]
     ],
-    "close": [
-
-    ],
+    "close": [],
     "company": [
       [
         "req",
@@ -751,9 +749,7 @@
         "lang"
       ]
     ],
-    "company_coverage": [
-
-    ],
+    "company_coverage": [],
     "company_id": [
       [
         "req",
@@ -856,38 +852,6 @@
       [
         "key",
         "lang"
-      ]
-    ],
-    "currency": [
-      [
-        "req",
-        "code"
-      ],
-      [
-        "key",
-        "deep"
-      ],
-      [
-        "key",
-        "lang"
-      ]
-    ],
-    "currency_rate": [
-      [
-        "req",
-        "base"
-      ],
-      [
-        "req",
-        "quote"
-      ],
-      [
-        "key",
-        "date"
-      ],
-      [
-        "key",
-        "amount"
       ]
     ],
     "date": [
@@ -1078,9 +1042,7 @@
         "profile"
       ]
     ],
-    "emoji_categories": [
-
-    ],
+    "emoji_categories": [],
     "emoji_convert": [
       [
         "req",
@@ -1095,9 +1057,7 @@
         "shortcode_source"
       ]
     ],
-    "emoji_metadata": [
-
-    ],
+    "emoji_metadata": [],
     "emoji_parse": [
       [
         "req",
@@ -1234,9 +1194,7 @@
         "transport"
       ]
     ],
-    "inspect": [
-
-    ],
+    "inspect": [],
     "ip": [
       [
         "req",
@@ -1269,48 +1227,6 @@
       [
         "key",
         "deep"
-      ],
-      [
-        "key",
-        "lang"
-      ]
-    ],
-    "mac": [
-      [
-        "req",
-        "mac"
-      ]
-    ],
-    "measure": [
-      [
-        "req",
-        "measure"
-      ],
-      [
-        "key",
-        "to"
-      ],
-      [
-        "key",
-        "locale"
-      ],
-      [
-        "key",
-        "system"
-      ]
-    ],
-    "measure_units": [
-      [
-        "key",
-        "query"
-      ],
-      [
-        "key",
-        "type"
-      ],
-      [
-        "key",
-        "unit"
       ],
       [
         "key",
@@ -1725,15 +1641,9 @@
     ]
   },
   "ParseAPI::Error": {
-    "candidates": [
-
-    ],
-    "code": [
-
-    ],
-    "docs": [
-
-    ],
+    "candidates": [],
+    "code": [],
+    "docs": [],
     "initialize": [
       [
         "keyreq",
@@ -1760,14 +1670,8 @@
         "retry_after"
       ]
     ],
-    "request_id": [
-
-    ],
-    "retry_after": [
-
-    ],
-    "status": [
-
-    ]
+    "request_id": [],
+    "retry_after": [],
+    "status": []
   }
 }
