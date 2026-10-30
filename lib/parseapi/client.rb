@@ -251,7 +251,7 @@ module ParseAPI
 		end
 
 		# Identify website technologies and versions by category.
-		# All categories are lists. Scope, pages and partial describe bounded coverage.
+		# Categories are arrays or null.
 		# Lists are nil when no page could be checked and empty for no matches.
 		def stack(domain, deep: false, pretty: false)
 			get("/stack/#{seg(domain)}", deep: deep, pretty: pretty)
