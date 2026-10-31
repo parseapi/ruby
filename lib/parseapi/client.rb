@@ -301,6 +301,14 @@ module ParseAPI
 
 
 
+		def currency(code, deep: false, lang: nil)
+			get("/currency/#{seg(code)}", deep: deep, lang: lang)
+		end
+
+		def currency_rate(base, quote, date: nil, amount: nil)
+			get("/currency/#{seg(base)}/#{seg(quote)}", date: date, amount: amount)
+		end
+
 		def language(code, deep: false, lang: nil)
 			get("/language/#{seg(code)}", deep: deep, lang: lang)
 		end

@@ -1,3 +1,3 @@
 module ParseAPI
-	VERSION = '1.10.6'.freeze
+	VERSION = '1.11.0'.freeze
 end

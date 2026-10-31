@@ -1638,6 +1638,38 @@
         "key",
         "date"
       ]
+    ],
+    "currency": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ]
+    ],
+    "currency_rate": [
+      [
+        "req",
+        "base"
+      ],
+      [
+        "req",
+        "quote"
+      ],
+      [
+        "key",
+        "date"
+      ],
+      [
+        "key",
+        "amount"
+      ]
     ]
   },
   "ParseAPI::Error": {
