@@ -2,6 +2,7 @@ require 'minitest/autorun'
 require 'json'
 require_relative '../lib/parseapi'
 require_relative 'public_api_snapshot'
+require_relative 'test_postal_weather'
 
 # Test double: records URLs/headers, returns queued responses without network.
 class StubClient < ParseAPI::Client

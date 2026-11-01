@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.11.2 — 2026-10-31
+
+- Correct Postal compact property-tax and Weather minute-rate migration guidance.
+- Verify raw JSON preserves compact records, canonical and earlier minute keys, accumulated History precipitation, zero/null values and collection availability.
+
 ## 1.10.0 — 2026-10-15
 
 - Add compatible City resource/list, spelling-search, geographic-filter, pagination, hierarchy, relationship and distance support.
