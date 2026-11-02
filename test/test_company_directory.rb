@@ -39,7 +39,6 @@ class TestCompanyDirectory < Minitest::Test
       [->(p) { p.company_search(industry: '0700', industry_type: 'sic') }, '/company', { 'industry' => '0700', 'industry_type' => 'sic' }],
       [->(p) { p.company_search(country: 'US', industry: '0700', industry_type: 'sic', cursor: 'opaque+/=', limit: 2, deep: true) }, '/company', { 'country' => 'US', 'industry' => '0700', 'industry_type' => 'sic', 'cursor' => 'opaque+/=', 'limit' => '2', 'deep' => 'true' }],
       [->(p) { p.company_search(query: 'Example', industry: '0700', industry_type: 'sic', deep: false) }, '/company', { 'q' => 'Example', 'industry' => '0700', 'industry_type' => 'sic' }],
-      [->(p) { p.company_coverage }, '/company/directory/coverage', {}]
     ]
     cases.each do |call, path, expected|
       body = { 'companies' => [], 'next' => nil, 'future' => nil }
@@ -57,13 +56,11 @@ class TestCompanyDirectory < Minitest::Test
     profiles = [BASE, BASE.merge('deep' => {}), BASE.merge('deep' => RICH), BASE.merge('deep' => { 'description' => nil, 'logo' => nil, 'socials' => nil, 'founded' => nil, 'sources' => nil })]
     page = { 'companies' => profiles.map { |p| p.merge('match' => { 'field' => 'future_field', 'value' => nil }) }, 'next' => 'opaque+/=', 'future' => nil }
     empty = { 'companies' => [], 'next' => nil }
-    coverage = { 'scope' => 'future_scope', 'companies' => 0, 'countries' => [], 'future' => nil }
-    client = CompanyDirectoryStub.new((profiles + [page, empty, coverage]).map { |body| [200, body] })
+    client = CompanyDirectoryStub.new((profiles + [page, empty]).map { |body| [200, body] })
     profiles.each_with_index { |profile, i| assert_equal profile, client.company_id(BASE['id'], deep: i > 0) }
     assert_equal page, client.company_search(query: 'GitLab', limit: 4, deep: true)
     assert_equal empty, client.company_search(query: 'GitLab', limit: 4, cursor: page['next'], deep: true)
-    assert_equal coverage, client.company_coverage
-    assert_equal 7, client.calls.length
+    assert_equal 6, client.calls.length
     assert_equal({ 'q' => 'GitLab', 'limit' => '4', 'cursor' => 'opaque+/=', 'deep' => 'true' }, params(client, 5))
   end
 
@@ -87,7 +84,7 @@ class TestCompanyDirectory < Minitest::Test
     assert_equal BASE, client.company_id(BASE['id'], deep: true)
     assert_equal 3, client.calls.length
     client = CompanyDirectoryStub.new([[503, {}]], retries: 0)
-    assert_raises(ParseAPI::Error) { client.company_coverage }
+    assert_raises(ParseAPI::Error) { client.company_search(query: 'Example') }
     assert_equal 1, client.calls.length
   end
 
@@ -103,7 +100,7 @@ class TestCompanyDirectory < Minitest::Test
     code = section.match(/```ruby\n(.*?)```/m)[1]
     parse = CompanyDirectoryStub.new([[200, { 'companies' => [BASE], 'next' => 'opaque+/=' }], [200, BASE.merge('deep' => RICH)], [200, { 'companies' => [], 'next' => nil }], [200, { 'scope' => 'sample' }]])
     eval(code, binding, 'README.md')
-    assert_equal 4, parse.calls.length
+    assert_equal 3, parse.calls.length
     assert_equal '/company/id/co_caczn6wf36hj', URI(parse.calls[1][:url]).path
     assert_equal 'opaque+/=', params(parse, 2)['cursor']
   end
