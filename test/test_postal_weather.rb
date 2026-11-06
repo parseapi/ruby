@@ -18,8 +18,8 @@ class PostalWeatherTest < Minitest::Test
     end
     assert_equal fixtures.length, calls.length
     calls.each { |_url, headers| assert_equal "parseapi-ruby/#{ParseAPI::VERSION}", headers['User-Agent'] }
-    assert_equal({ 'annual_median' => 0 }, fixtures['postal_compact']['deep']['property_tax'])
-    assert_nil fixtures['weather_current']['deep']['forecast']
-    assert_equal [], fixtures['weather_current']['deep']['alerts']
+    assert_equal({ 'annual_median' => 0 }, fixtures['postal_compact']['property_tax'])
+    assert_nil fixtures['weather_current']['forecast']
+    assert_equal [], fixtures['weather_current']['alerts']
   end
 end

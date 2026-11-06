@@ -33,21 +33,21 @@ class TestEmoji < Minitest::Test
     assert_equal 'POST',client.calls[4][:method]
     assert_equal({'text'=>'x 👍🏿 👍🏿'},JSON.parse(client.calls[4][:body]))
     assert_equal({'deep'=>'true','lang'=>'fr'},params[4])
-    assert_equal '2.0.0',client.calls[4][:headers]['Parse-Version']
+    assert_equal '2.1.0',client.calls[4][:headers]['X-API-Version']
     assert_equal 5,client.calls.length
   end
   def test_full_download_metadata_and_artwork
     bundle = JSON.parse(File.read(File.join(__dir__, 'fixtures/emoji-catalog.json')))
     client = EmojiStub.new(bundle)
     result = client.emoji_catalog
-    assert_equal 'https://api.parseapi.com/emoji/catalog?deep=true', client.calls[0][:url]
+    assert_equal 'https://api.parseapi.com/emoji/catalog', client.calls[0][:url]
     assert_equal '❤️', result['forms']['❤']
-    assert_equal({}, result['emojis'][0]['deep']['artwork'])
-    client.emoji_catalog(deep:false, max_version:'17.0', include_skin_tones:false)
-    assert_equal 'https://api.parseapi.com/emoji/catalog?deep=false&max_version=17.0&include_skin_tones=false', client.calls[1][:url]
-    metadata = EmojiStub.new(bundle['metadata'])
-    assert_equal 'Full source notice', metadata.emoji_metadata['notices'][0]['notice']
-    assert_equal 'https://api.parseapi.com/emoji/metadata', metadata.calls[0][:url]
+    assert_equal({}, result['emojis'][0]['artwork'])
+    client.emoji_catalog( max_version:'17.0', include_skin_tones:false)
+    assert_equal 'https://api.parseapi.com/emoji/catalog?max_version=17.0&include_skin_tones=false', client.calls[1][:url]
+    metadata = EmojiStub.new(bundle)
+    assert_equal 'Full source notice', metadata.emoji_catalog['metadata']['notices'][0]['notice']
+    assert_equal 'https://api.parseapi.com/emoji/catalog', metadata.calls[0][:url]
   end
 
   def test_private_conversion
@@ -64,7 +64,7 @@ class TestEmojiArtwork < Minitest::Test
   def test_keyed_svg_and_png_urls
     fixture = JSON.parse(File.read(File.join(__dir__, 'fixtures/emoji-artwork.json')))
     result = EmojiStub.new(fixture['emoji']).emoji('rocket', deep: true)
-    artwork = result['deep']['artwork']
+    artwork = result['artwork']
     assert_equal ['noto','twemoji','openmoji'], artwork.keys
     assert_equal 'https://cdn.parseapi.com/emoji/openmoji/17.0.0/1f680.svg', artwork['openmoji']['svg']
     assert_equal 'https://cdn.parseapi.com/emoji/openmoji/17.0.0/72/1f680.png', artwork['openmoji']['png']['72']

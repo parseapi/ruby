@@ -60,16 +60,6 @@
         "lang"
       ]
     ],
-    "bin": [
-      [
-        "req",
-        "bin"
-      ],
-      [
-        "key",
-        "deep"
-      ]
-    ],
     "caller": [
       [
         "req",
@@ -285,19 +275,11 @@
       ],
       [
         "key",
-        "timezone"
-      ],
-      [
-        "key",
         "bbox"
       ],
       [
         "key",
         "sort"
-      ],
-      [
-        "key",
-        "order"
       ],
       [
         "key",
@@ -391,19 +373,11 @@
       ],
       [
         "key",
-        "timezone"
-      ],
-      [
-        "key",
         "bbox"
       ],
       [
         "key",
         "sort"
-      ],
-      [
-        "key",
-        "order"
       ],
       [
         "key",
@@ -501,19 +475,11 @@
       ],
       [
         "key",
-        "timezone"
-      ],
-      [
-        "key",
         "bbox"
       ],
       [
         "key",
         "sort"
-      ],
-      [
-        "key",
-        "order"
       ],
       [
         "key",
@@ -641,19 +607,11 @@
       ],
       [
         "key",
-        "timezone"
-      ],
-      [
-        "key",
         "bbox"
       ],
       [
         "key",
         "sort"
-      ],
-      [
-        "key",
-        "order"
       ],
       [
         "key",
@@ -749,7 +707,6 @@
         "lang"
       ]
     ],
-    "company_coverage": [],
     "company_id": [
       [
         "req",
@@ -854,6 +811,38 @@
         "lang"
       ]
     ],
+    "currency": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ]
+    ],
+    "currency_rate": [
+      [
+        "req",
+        "base"
+      ],
+      [
+        "req",
+        "quote"
+      ],
+      [
+        "key",
+        "date"
+      ],
+      [
+        "key",
+        "amount"
+      ]
+    ],
     "date": [
       [
         "req",
@@ -952,6 +941,12 @@
         "deep"
       ]
     ],
+    "email_verify": [
+      [
+        "req",
+        "email"
+      ]
+    ],
     "emoji": [
       [
         "req",
@@ -1011,10 +1006,6 @@
     "emoji_catalog": [
       [
         "key",
-        "deep"
-      ],
-      [
-        "key",
         "lang"
       ],
       [
@@ -1036,10 +1027,6 @@
       [
         "key",
         "include_skin_tones"
-      ],
-      [
-        "key",
-        "profile"
       ]
     ],
     "emoji_categories": [],
@@ -1057,7 +1044,6 @@
         "shortcode_source"
       ]
     ],
-    "emoji_metadata": [],
     "emoji_parse": [
       [
         "req",
@@ -1637,38 +1623,6 @@
       [
         "key",
         "date"
-      ]
-    ],
-    "currency": [
-      [
-        "req",
-        "code"
-      ],
-      [
-        "key",
-        "deep"
-      ],
-      [
-        "key",
-        "lang"
-      ]
-    ],
-    "currency_rate": [
-      [
-        "req",
-        "base"
-      ],
-      [
-        "req",
-        "quote"
-      ],
-      [
-        "key",
-        "date"
-      ],
-      [
-        "key",
-        "amount"
       ]
     ]
   },

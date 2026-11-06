@@ -7,7 +7,7 @@ class TestCityQueries < Minitest::Test
   def test_filters_encode_zero_dateline_and_opaque_cursor
     calls = []
     client = ParseAPI::Client.new('fixture', retries: 0, transport: ->(url, *_args) { calls << url; [200, {}, '{}'] })
-    filters = { min_population: 0, max_population: 5000000, timezone: 'Asia/Tokyo', bbox: '170,-20,-170,20', sort: 'population', order: 'desc', cursor: 'opaque+/=cursor?&' }
+    filters = { min_population: 0, max_population: 5000000, timezones: ['Asia/Tokyo'], bbox: '170,-20,-170,20', sort: '-population', cursor: 'opaque+/=cursor?&' }
     client.city_list(country: 'JP', limit: 5, hierarchy: true, **filters)
     client.city_nearby_coords(0, 0, radius: 20, unit: 'mi', country: 'JP', state: '27', **filters)
     client.city_search('Sak', page: true, **filters)
@@ -16,7 +16,7 @@ class TestCityQueries < Minitest::Test
       uri = URI(url)
       assert_equal(index == 3 ? '/city/Sakai/nearby' : '/city', uri.path)
       query = URI.decode_www_form(uri.query).to_h
-      filters.each { |name, value| assert_equal value.to_s, query[name.to_s] }
+      filters.each { |name, value| assert_equal(value.is_a?(Array) ? value.join(',') : value.to_s, query[name.to_s]) }
       index < 2 ? (refute query.key?('page')) : (assert_equal 'true', query['page'])
     end
     browse = URI.decode_www_form(URI(calls[0]).query).to_h
@@ -29,7 +29,7 @@ class TestCityQueries < Minitest::Test
     calls = []
     client = ParseAPI::Client.new('fixture', retries: 0, transport: ->(url, *_args) { calls << url; [200, {}, '{}'] })
     client.city_list; client.city_nearby_coords(0, 0); client.city_search('Sak', cursor: 'opaque')
-    ['browse=true&format=list', 'lat=0&lon=0&nearby=true&format=list', 'q=Sak&cursor=opaque'].each_with_index do |expected, index|
+    ['browse=true', 'lat=0&lon=0&nearby=true', 'q=Sak&cursor=opaque'].each_with_index do |expected, index|
       assert_equal URI.decode_www_form(expected).to_h, URI.decode_www_form(URI(calls[index]).query).to_h
     end
   end

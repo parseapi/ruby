@@ -74,6 +74,12 @@ class TestUrlMapping < Minitest::Test
 		end
 	end
 
+	def test_legacy_bin_is_not_a_public_lookup
+		client = stub_client
+		refute_respond_to client, :bin
+		assert_respond_to client, :card
+	end
+
 	def test_public_api_matches_the_reviewed_manifest
 		expected = JSON.parse(File.read(File.join(__dir__, 'public_api.json')))
 		assert_equal expected, PublicAPISnapshot.capture
@@ -118,7 +124,7 @@ class TestUrlMapping < Minitest::Test
 			assert_equal body, client.stack('example.com')
 			assert_equal 'https://api.parseapi.com/stack/b%C3%BCcher.example?deep=true&pretty=true', client.calls[0][:url]
 			assert_equal 'https://api.parseapi.com/stack/example.com', client.calls[1][:url]
-			assert_equal '2.0.0', client.calls[0][:headers]['Parse-Version']
+			assert_equal '2.1.0', client.calls[0][:headers]['X-API-Version']
 		end
 	end
 
@@ -544,7 +550,8 @@ class TestVersion < Minitest::Test
 		client.useragent('Custom browser')
 		assert_equal ['/country/US', '/country/US', '/ip', '/useragent'], calls.map { |url, _headers| URI(url).path }
 		calls.each do |url, headers|
-			assert_equal '2.0.0', headers['Parse-Version']
+			assert_equal '2.1.0', headers['X-API-Version']
+			refute headers.key?('Parse-Version')
 			assert_equal 'same-production-key', headers['X-API-Key']
 			assert_nil URI(url).query
 		end
