@@ -221,7 +221,7 @@ module ParseAPI
 
 		# Run one explicit metered mailbox check, without automatic retries.
 		def email_verify(email)
-			get('/email/verify', {}, {}, { email: email })
+			get('/email/verify', { email: email })
 		end
 
 
@@ -405,11 +405,11 @@ module ParseAPI
 
 		# Positions are UTF-16 code units; end is exclusive.
 		def emoji_parse(text, deep: false, lang: nil)
-			get('/emoji/parse', { deep: deep, lang: lang }, {}, { text: text })
+			get('/emoji/parse', { text: text, deep: deep, lang: lang })
 		end
 
 		def emoji_convert(text, direction:, shortcode_source:)
-			get('/emoji/convert', {direction: direction, shortcode_source: shortcode_source}, {}, {text: text})
+			get('/emoji/convert', {text: text, direction: direction, shortcode_source: shortcode_source})
 		end
 
 
@@ -445,9 +445,18 @@ module ParseAPI
 		def get(path, params = {}, headers = {}, json = nil)
 			retries = retries_for(path, params)
 			query = params.reject { |_name, value| value.nil? || value == false }
+			field = path == '/email/verify' ? :email : ['/emoji/parse', '/emoji/convert'].include?(path) ? :text : nil
+			value = field ? params[field] : nil
+			if json.nil? && field && (!value.is_a?(String) || !value.valid_encoding?)
+				json = { field => value }; query.delete(field)
+			end
 			uri = @base_url.dup
 			uri.path = path
 			uri.query = URI.encode_www_form(query) unless query.empty?
+			if json.nil? && field && uri.to_s.bytesize > 8000
+				json = { field => value }; query.delete(field)
+				uri.query = query.empty? ? nil : URI.encode_www_form(query)
+			end
 
 			encoded = json.nil? ? nil : JSON.generate(json)
 			attempt = 0

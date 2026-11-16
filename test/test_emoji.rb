@@ -30,9 +30,9 @@ class TestEmoji < Minitest::Test
     assert_equal({'q'=>'face','category'=>'Smileys & Emotion','version'=>'17.0','max_version'=>'18.0','include_skin_tones'=>'false','offset'=>'0'},params[1])
     assert_equal({'include_skin_tones'=>'false','offset'=>'2'},params[2])
     assert_equal 'https://api.parseapi.com/emoji/categories',client.calls[3][:url]
-    assert_equal 'POST',client.calls[4][:method]
-    assert_equal({'text'=>'x 👍🏿 👍🏿'},JSON.parse(client.calls[4][:body]))
-    assert_equal({'deep'=>'true','lang'=>'fr'},params[4])
+    assert_equal 'GET',client.calls[4][:method]
+    assert_nil client.calls[4][:body]
+    assert_equal({'text'=>'x 👍🏿 👍🏿','deep'=>'true','lang'=>'fr'},params[4])
     assert_equal '2.2.0',client.calls[4][:headers]['X-API-Version']
     assert_equal 5,client.calls.length
   end
@@ -54,8 +54,8 @@ class TestEmoji < Minitest::Test
     client=EmojiStub.new({'text'=>'🚀','unresolved'=>[]})
     assert_equal '🚀',client.emoji_convert(':rocket:',direction:'to_emoji',shortcode_source:'github')['text']
     assert_equal 1,client.calls.length
-    assert_equal 'POST',client.calls[0][:method]
-    assert_equal({'text'=>':rocket:'},JSON.parse(client.calls[0][:body]))
+    assert_equal 'GET',client.calls[0][:method]
+    assert_equal ':rocket:', URI.decode_www_form(URI(client.calls[0][:url]).query).to_h['text']; assert_nil client.calls[0][:body]
   end
 
 end
@@ -68,5 +68,23 @@ class TestEmojiArtwork < Minitest::Test
     assert_equal ['noto','twemoji','openmoji'], artwork.keys
     assert_equal 'https://cdn.parseapi.com/emoji/openmoji/17.0.0/1f680.svg', artwork['openmoji']['svg']
     assert_equal 'https://cdn.parseapi.com/emoji/openmoji/17.0.0/72/1f680.png', artwork['openmoji']['png']['72']
+  end
+end
+
+
+class UrlSizedEmojiTest < Minitest::Test
+  def test_long_text_uses_one_post_and_empty_text_remains_get
+    ['🚀' * 8000, ''].each do |text|
+      calls=[]
+      client=ParseAPI::Client.new('fixture',transport:lambda { |url,_headers,method='GET',body=nil| calls << [URI(url),method,body]; [200,{},JSON.generate({'emojis'=>[]})] })
+      client.emoji_parse(text)
+      assert_equal 1,calls.length
+      params=URI.decode_www_form(calls[0][0].query||'').to_h
+      if text.empty?
+        assert_equal 'GET',calls[0][1];assert_equal '',params['text']
+      else
+        assert_equal 'POST',calls[0][1];assert_equal({'text'=>text},JSON.parse(calls[0][2]));refute params.key?('text')
+      end
+    end
   end
 end

@@ -16,10 +16,10 @@ class NaturalContractTest < Minitest::Test
     assert_equal 'GET', calls[0][2]
     calls.drop(1).each do |url, headers, method, body|
       assert_equal '/email/verify', url.path
-      assert_nil url.query
+      assert_equal({ 'email' => result['email'] }, URI.decode_www_form(url.query).to_h)
       assert_equal '2.2.0', headers['X-API-Version']
-      assert_equal 'POST', method
-      assert_equal({ 'email' => result['email'] }, JSON.parse(body))
+      assert_equal 'GET', method
+      assert_nil body
     end
     refute result.key?('deep')
   end
@@ -33,4 +33,16 @@ class NaturalContractTest < Minitest::Test
     assert_raises(ParseAPI::Error) { client.email_verify('person@example.com') }
     assert_equal 1, calls
   end
+  def test_email_outcomes_keep_unknown_distinct_with_status
+    [[true, 'accepted'], [false, 'mailbox_not_found'], [nil, 'catchall']].each do |deliverable, reason|
+      status = { 'accepted' => 'deliverable', 'mailbox_not_found' => 'undeliverable', 'catchall' => 'risky' }.fetch(reason)
+      result = { 'status' => status, 'email' => 'a@example.com', 'valid' => true, 'domain' => 'example.com', 'deliverable' => deliverable, 'catchall' => deliverable.nil?, 'reason' => reason }
+      client = ParseAPI::Client.new('fixture', transport: lambda { |_url, _headers, _method = 'GET', _body = nil|
+        [200, {}, JSON.generate(result)]
+      })
+      assert_equal result, client.email_verify(result['email'])
+      assert_equal status, result['status']
+    end
+  end
+
 end
