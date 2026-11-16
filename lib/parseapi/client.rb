@@ -19,7 +19,7 @@ module ParseAPI
 	end
 
 	class Client
-		API_VERSION = '2.1.0'.freeze
+		API_VERSION = '2.2.0'.freeze
 		private def city_format(value)
 			raise ArgumentError, 'Use format=geojson or omit format.' unless value.nil? || value == 'geojson'
 			value
@@ -97,13 +97,17 @@ module ParseAPI
 			get("/state/#{seg(code)}", country: country, deep: deep, lang: lang)
 		end
 
-		def state_districts(code, country: nil, deep: false, lang: nil)
-			get("/state/#{seg(code)}/districts", country: country, deep: deep, lang: lang)
+		def state_counties(code, country: nil, deep: false, lang: nil)
+			get("/state/#{seg(code)}/counties", country: country, deep: deep, lang: lang)
 		end
 
-		def district(code, country: nil, state: nil, deep: false, lang: nil)
-			get("/district/#{seg(code)}", country: country, state: state, deep: deep, lang: lang)
+		def county(code, country: nil, state: nil, deep: false, lang: nil)
+			get("/county/#{seg(code)}", country: country, state: state, deep: deep, lang: lang)
 		end
+
+		# Deprecated source aliases. API 2.2 results use county/counties fields.
+		alias_method :state_districts, :state_counties
+		alias_method :district, :county
 
 		def city(name, country: nil, state: nil, deep: false, lang: nil, type: nil, grain: nil, hierarchy: false, aliases: false, ambiguity: nil, format: nil, romanized: false)
 			get("/city/#{seg(name)}", country: country, state: state, deep: deep, lang: lang, type: type, grain: grain, hierarchy: hierarchy, aliases: aliases, ambiguity: ambiguity, romanized: romanized, format: city_format(format))
@@ -363,7 +367,7 @@ module ParseAPI
 			get('/elevation', lat: lat, lon: lon)
 		end
 
-		# Resolve the country, state, district and timezone at coordinates. Deep adds terrain and
+		# Resolve the country, state, county and timezone at coordinates. Deep adds terrain and
 		# compact nearest-city context on every plan. The timezone ID stays in core. The nearest city is
 		# null when none is within 200 km.
 		def point(lat, lon, deep: false, lang: nil)

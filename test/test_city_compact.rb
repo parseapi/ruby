@@ -7,7 +7,7 @@ class CityCompactTest < Minitest::Test
   rows=JSON.parse(File.read(File.join(__dir__,'fixtures/noise-approved.json'))).select {|row| row.fetch('id').start_with?('city-')}
   pending=rows.dup
   client=ParseAPI::Client.new('fixture',retries:0,transport:lambda {|_url,headers|
-   assert_equal '2.1.0',headers['X-API-Version']
+   assert_equal '2.2.0',headers['X-API-Version']
    [200,{},JSON.generate(pending.shift.fetch('body'))]
   })
   rows.each do |row|

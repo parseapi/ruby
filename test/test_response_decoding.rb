@@ -7,7 +7,7 @@ class ResponseDecodingTest < Minitest::Test
   client=ParseAPI::Client.new('fixture',retries:1,transport:lambda {|url,headers|calls << [url,headers];calls.size==1 ? [503,{'retry-after'=>'0'},'{"code":"unavailable"}'] : [200,{},body]})
   assert_equal JSON.parse(body),client.time_zones
   assert_equal 2,calls.size
-  calls.each {|url,headers|refute headers.key?('Parse-Response');assert_equal '2.1.0',headers['X-API-Version'];assert_nil URI(url).query}
+  calls.each {|url,headers|refute headers.key?('Parse-Response');assert_equal '2.2.0',headers['X-API-Version'];assert_nil URI(url).query}
  end
 
  def test_seven_numeric_fields_pass_through

@@ -12,7 +12,7 @@ class DomainNullabilityTest < Minitest::Test
         assert_equal body, client.domain('example.com', deep: true)
         assert_equal 1, calls.size
         assert_equal 'https://api.parseapi.com/domain/example.com?deep=true', calls[0][0].to_s
-        assert_equal '2.1.0', calls[0][1]['X-API-Version']
+        assert_equal '2.2.0', calls[0][1]['X-API-Version']
       end
     end
   end

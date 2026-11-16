@@ -47,7 +47,7 @@ class TestCompanyDirectory < Minitest::Test
       assert_equal 1, client.calls.length
       assert_equal path, URI(client.calls[0][:url]).path
       assert_equal expected, params(client, 0)
-      assert_equal '2.1.0', client.calls[0][:headers]['X-API-Version']
+      assert_equal '2.2.0', client.calls[0][:headers]['X-API-Version']
       assert_equal 'company_fixture', client.calls[0][:headers]['X-API-Key']
     end
   end

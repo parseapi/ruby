@@ -688,7 +688,9 @@
         "romanized"
       ]
     ],
-    "close": [],
+    "close": [
+
+    ],
     "company": [
       [
         "req",
@@ -805,6 +807,28 @@
       [
         "req",
         "code"
+      ],
+      [
+        "key",
+        "lang"
+      ]
+    ],
+    "county": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "state"
+      ],
+      [
+        "key",
+        "deep"
       ],
       [
         "key",
@@ -1029,7 +1053,9 @@
         "include_skin_tones"
       ]
     ],
-    "emoji_categories": [],
+    "emoji_categories": [
+
+    ],
     "emoji_convert": [
       [
         "req",
@@ -1180,7 +1206,9 @@
         "transport"
       ]
     ],
-    "inspect": [],
+    "inspect": [
+
+    ],
     "ip": [
       [
         "req",
@@ -1380,6 +1408,24 @@
       ]
     ],
     "state": [
+      [
+        "req",
+        "code"
+      ],
+      [
+        "key",
+        "country"
+      ],
+      [
+        "key",
+        "deep"
+      ],
+      [
+        "key",
+        "lang"
+      ]
+    ],
+    "state_counties": [
       [
         "req",
         "code"
@@ -1627,9 +1673,15 @@
     ]
   },
   "ParseAPI::Error": {
-    "candidates": [],
-    "code": [],
-    "docs": [],
+    "candidates": [
+
+    ],
+    "code": [
+
+    ],
+    "docs": [
+
+    ],
     "initialize": [
       [
         "keyreq",
@@ -1656,8 +1708,14 @@
         "retry_after"
       ]
     ],
-    "request_id": [],
-    "retry_after": [],
-    "status": []
+    "request_id": [
+
+    ],
+    "retry_after": [
+
+    ],
+    "status": [
+
+    ]
   }
 }

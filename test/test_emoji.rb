@@ -33,7 +33,7 @@ class TestEmoji < Minitest::Test
     assert_equal 'POST',client.calls[4][:method]
     assert_equal({'text'=>'x 👍🏿 👍🏿'},JSON.parse(client.calls[4][:body]))
     assert_equal({'deep'=>'true','lang'=>'fr'},params[4])
-    assert_equal '2.1.0',client.calls[4][:headers]['X-API-Version']
+    assert_equal '2.2.0',client.calls[4][:headers]['X-API-Version']
     assert_equal 5,client.calls.length
   end
   def test_full_download_metadata_and_artwork

@@ -17,7 +17,7 @@ class NaturalContractTest < Minitest::Test
     calls.drop(1).each do |url, headers, method, body|
       assert_equal '/email/verify', url.path
       assert_nil url.query
-      assert_equal '2.1.0', headers['X-API-Version']
+      assert_equal '2.2.0', headers['X-API-Version']
       assert_equal 'POST', method
       assert_equal({ 'email' => result['email'] }, JSON.parse(body))
     end

@@ -124,7 +124,7 @@ class TestUrlMapping < Minitest::Test
 			assert_equal body, client.stack('example.com')
 			assert_equal 'https://api.parseapi.com/stack/b%C3%BCcher.example?deep=true&pretty=true', client.calls[0][:url]
 			assert_equal 'https://api.parseapi.com/stack/example.com', client.calls[1][:url]
-			assert_equal '2.1.0', client.calls[0][:headers]['X-API-Version']
+			assert_equal '2.2.0', client.calls[0][:headers]['X-API-Version']
 		end
 	end
 
@@ -192,8 +192,8 @@ class TestUrlMapping < Minitest::Test
 		'country' => [->(p) { p.country('US') }, 'https://api.parseapi.com/country/US'],
 		'country_states' => [->(p) { p.country_states('US') }, 'https://api.parseapi.com/country/US/states'],
 		'state' => [->(p) { p.state('NC', country: 'US') }, 'https://api.parseapi.com/state/NC?country=US'],
-		'state_districts' => [->(p) { p.state_districts('NC', country: 'US') }, 'https://api.parseapi.com/state/NC/districts?country=US'],
-		'district' => [->(p) { p.district('37081') }, 'https://api.parseapi.com/district/37081'],
+		'state_districts' => [->(p) { p.state_districts('NC', country: 'US') }, 'https://api.parseapi.com/state/NC/counties?country=US'],
+		'district' => [->(p) { p.district('37081') }, 'https://api.parseapi.com/county/37081'],
 		'city' => [->(p) { p.city('charlotte', state: 'NC') }, 'https://api.parseapi.com/city/charlotte?state=NC'],
 		'city_id' => [->(p) { p.city_id('city_mb8mbqrkz8zb') }, 'https://api.parseapi.com/city/id/city_mb8mbqrkz8zb'],
 		'city_search' => [->(p) { p.city_search('char', country: 'US', limit: 10) }, 'https://api.parseapi.com/city?q=char&country=US&limit=10'],
@@ -550,7 +550,7 @@ class TestVersion < Minitest::Test
 		client.useragent('Custom browser')
 		assert_equal ['/country/US', '/country/US', '/ip', '/useragent'], calls.map { |url, _headers| URI(url).path }
 		calls.each do |url, headers|
-			assert_equal '2.1.0', headers['X-API-Version']
+			assert_equal '2.2.0', headers['X-API-Version']
 			refute headers.key?('Parse-Version')
 			assert_equal 'same-production-key', headers['X-API-Key']
 			assert_nil URI(url).query
